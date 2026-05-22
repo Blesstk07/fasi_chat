@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FasiChat — Apparitaire</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/dashboard_apparitaire.css">
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="brand-mark">🗂</div>
+    <div class="brand-info"><h3>FasiChat</h3><span>Espace Apparitaire</span></div>
+  </div>
+  <div class="role-badge"><div class="rdot"></div><span>APPARITAIRE — Gestion du Valve</span></div>
+  <div class="nav-section">
+    <div class="nav-label-section">Gestion Valve</div>
+    <div class="nav-item active" onclick="setNav(this)"><div class="nav-icon" style="background:rgba(99,102,241,0.12);">📊</div><div><div class="nl">Tableau de bord</div><div class="ns">Vue d'ensemble</div></div></div>
+    <div class="nav-item" onclick="openModal()"><div class="nav-icon" style="background:rgba(34,197,94,0.12);">➕</div><div><div class="nl">Nouvelle annonce</div><div class="ns">Publier sur le Valve</div></div></div>
+    <div class="nav-item" onclick="setNav(this)"><div class="nav-icon" style="background:rgba(245,158,11,0.12);">📋</div><div><div class="nl">Gérer les annonces</div><div class="ns">Modifier / Supprimer</div></div><div class="nb">6</div></div>
+    <div class="nav-item" onclick="setNav(this)"><div class="nav-icon" style="background:rgba(239,68,68,0.12);">🚨</div><div><div class="nl">Urgences</div><div class="ns">Priorité haute</div></div></div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label-section">Navigation</div>
+    <div class="nav-item" onclick="location.href='valve.html'"><div class="nav-icon" style="background:rgba(99,102,241,0.08);">📣</div><div><div class="nl">Voir le Valve public</div><div class="ns">Vue utilisateur</div></div></div>
+    <div class="nav-item" onclick="location.href='dashboard_admin.html'"><div class="nav-icon" style="background:rgba(220,38,38,0.08);">🏛</div><div><div class="nl">Espace Doyen</div><div class="ns">Administration</div></div></div>
+    <div class="nav-item" onclick="location.href='dashboard_etudiant.html'"><div class="nav-icon" style="background:rgba(79,163,224,0.08);">🎓</div><div><div class="nl">Vue Étudiant</div><div class="ns">Dashboard étudiant</div></div></div>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="profile-ava"><div class="online-dot"></div>🗂</div>
+    <div class="pi"><h4>DJ. ROLLY</h4><span>Apparitaire · Faculté</span></div>
+    <a href="login.html" class="logout-btn">🚪</a>
+  </div>
+</div>
+
+<div class="main-area">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Gestion du Valve — Apparitaire</div>
+      <div class="topbar-sub">Faculté des Sciences Informatiques · Tableau d'affichage officiel</div>
+    </div>
+    <div class="topbar-right">
+      <button class="tb-btn ghost" onclick="location.href='valve.html'">👁 Voir le Valve</button>
+      <button class="tb-btn primary" onclick="openModal()">➕ Nouvelle annonce</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="stats-row">
+      <div class="stat-card sc-indigo"><div class="si">📣</div><div class="sn">6</div><div class="sl">Annonces actives</div><div class="st">Sur le Valve public</div></div>
+      <div class="stat-card sc-red"><div class="si">🚨</div><div class="sn">1</div><div class="sl">Urgence active</div><div class="st">Priorité maximale</div></div>
+      <div class="stat-card sc-gold"><div class="si">📅</div><div class="sn">2</div><div class="sl">Convocations publiées</div><div class="st">Doyen &amp; Vice-Doyen</div></div>
+      <div class="stat-card sc-green"><div class="si">👁</div><div class="sn">342</div><div class="sl">Vues aujourd'hui</div><div class="st">Toutes annonces</div></div>
+    </div>
+
+    <div class="main-grid">
+      <!-- LEFT: VALVE MANAGER -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <!-- COMPOSE -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">✍️ Rédiger une annonce</div>
+            <span style="font-size:10px;font-weight:700;background:rgba(99,102,241,0.1);color:var(--indigo);border:1px solid rgba(99,102,241,0.2);padding:3px 10px;border-radius:20px;letter-spacing:0.5px;">APPARITAIRE UNIQUEMENT</span>
+          </div>
+          <div class="compose-area">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Titre de l'annonce *</label>
+                <input type="text" class="form-input" id="compTitle" placeholder="Ex: Modification calendrier...">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Catégorie *</label>
+                <select class="form-select" id="compCat">
+                  <option value="">Choisir...</option>
+                  <option>🚨 Urgent</option>
+                  <option>📅 Convocation</option>
+                  <option>📢 Information</option>
+                  <option>🎓 Académique</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Contenu *</label>
+              <textarea class="form-textarea" id="compContent" placeholder="Rédigez le contenu de l'annonce..."></textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Date d'expiration</label>
+                <input type="date" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Pièce jointe</label>
+                <input type="file" class="form-input" accept=".pdf,.doc,.docx">
+              </div>
+            </div>
+            <button class="pub-btn" onclick="publishAnnonce()">📣 Publier sur le Valve</button>
+          </div>
+        </div>
+
+        <!-- ANNONCES LIST -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📋 Annonces publiées (6)</div>
+            <button class="card-action" onclick="location.href='valve.html'">Voir le Valve public →</button>
+          </div>
+          <div class="annonces-list" id="annoncesList">
+            <div class="annonce-item">
+              <div class="ai-cat" style="background:rgba(239,68,68,0.1);">🚨</div>
+              <div class="ai-body">
+                <div class="ai-cat-tag" style="color:#ef4444;">URGENT</div>
+                <div class="ai-title">Modification du calendrier des examens S5</div>
+                <div class="ai-preview">Les épreuves de POO et Base de Données sont reportées au lundi 27 janvier 2025...</div>
+                <div class="ai-meta">
+                  <span class="status-pill urgent-pill">● Urgence</span>
+                  <span>Aujourd'hui 07:30</span>
+                  <span>👁 87 vues</span>
+                </div>
+              </div>
+              <div class="ai-actions">
+                <button class="ai-btn edit" onclick="openEditModal('Modification du calendrier des examens S5')">✏</button>
+                <button class="ai-btn del" onclick="deleteAnnonce(this)">🗑</button>
+              </div>
+            </div>
+            <div class="annonce-item">
+              <div class="ai-cat" style="background:rgba(245,158,11,0.1);">🏛</div>
+              <div class="ai-body">
+                <div class="ai-cat-tag" style="color:#d97706;">CONVOCATION</div>
+                <div class="ai-title">Réunion Conseil Pédagogique — Vendredi 24 Jan</div>
+                <div class="ai-preview">Convoquée par le Doyen · Présence obligatoire pour tous les enseignants...</div>
+                <div class="ai-meta">
+                  <span class="status-pill convoc-pill">📅 Convocation</span>
+                  <span>Hier 16:00</span>
+                  <span>👁 124 vues</span>
+                </div>
+              </div>
+              <div class="ai-actions">
+                <button class="ai-btn edit">✏</button>
+                <button class="ai-btn del" onclick="deleteAnnonce(this)">🗑</button>
+              </div>
+            </div>
+            <div class="annonce-item">
+              <div class="ai-cat" style="background:rgba(245,158,11,0.1);">📋</div>
+              <div class="ai-body">
+                <div class="ai-cat-tag" style="color:#d97706;">CONVOCATION</div>
+                <div class="ai-title">Réunion Commission de Recherche — Lundi 27 Jan</div>
+                <div class="ai-preview">Convoquée par le Vice-Doyen · Enseignants-chercheurs concernés...</div>
+                <div class="ai-meta">
+                  <span class="status-pill convoc-pill">📅 Convocation</span>
+                  <span>Hier 09:15</span>
+                  <span>👁 68 vues</span>
+                </div>
+              </div>
+              <div class="ai-actions">
+                <button class="ai-btn edit">✏</button>
+                <button class="ai-btn del" onclick="deleteAnnonce(this)">🗑</button>
+              </div>
+            </div>
+            <div class="annonce-item">
+              <div class="ai-cat" style="background:rgba(34,197,94,0.1);">📢</div>
+              <div class="ai-body">
+                <div class="ai-cat-tag" style="color:#16a34a;">INFORMATION</div>
+                <div class="ai-title">Dépôt des projets — Plateforme en ligne</div>
+                <div class="ai-preview">Date limite vendredi 31 janvier 2025 à 23h59...</div>
+                <div class="ai-meta">
+                  <span class="status-pill active-pill">● Actif</span>
+                  <span>20 Jan</span>
+                  <span>👁 203 vues</span>
+                </div>
+              </div>
+              <div class="ai-actions">
+                <button class="ai-btn edit">✏</button>
+                <button class="ai-btn del" onclick="deleteAnnonce(this)">🗑</button>
+              </div>
+            </div>
+            <div class="annonce-item">
+              <div class="ai-cat" style="background:rgba(99,102,241,0.1);">🎓</div>
+              <div class="ai-body">
+                <div class="ai-cat-tag" style="color:#6366f1;">ACADÉMIQUE</div>
+                <div class="ai-title">Résultats du Semestre 4 disponibles</div>
+                <div class="ai-preview">Disponibles sur le portail étudiant · 5 jours pour réclamations...</div>
+                <div class="ai-meta">
+                  <span class="status-pill active-pill">● Actif</span>
+                  <span>18 Jan</span>
+                  <span>👁 312 vues</span>
+                </div>
+              </div>
+              <div class="ai-actions">
+                <button class="ai-btn edit">✏</button>
+                <button class="ai-btn del" onclick="deleteAnnonce(this)">🗑</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COL -->
+      <div class="right-col">
+        <div class="stat-small">
+          <div class="stat-small-title">📊 Statistiques Valve</div>
+          <div class="bar-item">
+            <div class="bar-label">Urgences <span>1 / 6</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:17%;background:linear-gradient(90deg,#ef4444,#dc2626);"></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-label">Convocations <span>2 / 6</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:33%;background:linear-gradient(90deg,#f59e0b,#d97706);"></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-label">Informations <span>2 / 6</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:33%;background:linear-gradient(90deg,#22c55e,#16a34a);"></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-label">Académique <span>1 / 6</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:17%;background:linear-gradient(90deg,var(--indigo),#4f46e5);"></div></div>
+          </div>
+          <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--gray-100);">
+            <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:8px;">Vues totales aujourd'hui</div>
+            <div style="font-size:28px;font-weight:700;color:var(--indigo);">342 <span style="font-size:13px;color:var(--gray-400);font-weight:400;">utilisateurs</span></div>
+          </div>
+        </div>
+
+        <div class="recent-card">
+          <div class="card-header"><div class="card-title">🕐 Dernières actions</div></div>
+          <div>
+            <div class="activity-item">
+              <div class="act-ico" style="background:rgba(239,68,68,0.1);">🚨</div>
+              <div class="act-t"><strong>Urgence publiée</strong><p>Calendrier examens S5 modifié</p></div>
+              <div class="act-time">07:30</div>
+            </div>
+            <div class="activity-item">
+              <div class="act-ico" style="background:rgba(99,102,241,0.1);">✏</div>
+              <div class="act-t"><strong>Annonce modifiée</strong><p>Dépôt des projets</p></div>
+              <div class="act-time">Hier 14:10</div>
+            </div>
+            <div class="activity-item">
+              <div class="act-ico" style="background:rgba(245,158,11,0.1);">📅</div>
+              <div class="act-t"><strong>Convocation publiée</strong><p>Conseil pédagogique Doyen</p></div>
+              <div class="act-time">Hier 16:05</div>
+            </div>
+            <div class="activity-item">
+              <div class="act-ico" style="background:rgba(239,68,68,0.1);">🗑</div>
+              <div class="act-t"><strong>Annonce supprimée</strong><p>Fermeture bibliothèque expirée</p></div>
+              <div class="act-time">18 Jan</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">⚡ Actions rapides</div></div>
+          <div style="padding:14px 16px;display:flex;flex-direction:column;gap:8px;">
+            <button onclick="openModal()" style="width:100%;padding:10px 14px;background:linear-gradient(135deg,var(--indigo),#4f46e5);color:white;border:none;border-radius:10px;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 0.2s;">➕ Nouvelle annonce</button>
+            <button onclick="location.href='valve.html'" style="width:100%;padding:10px 14px;background:var(--gray-100);color:var(--navy);border:none;border-radius:10px;font-family:'Sora',sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;">👁 Prévisualiser le Valve</button>
+            <button style="width:100%;padding:10px 14px;background:rgba(239,68,68,0.08);color:var(--danger);border:1px solid rgba(239,68,68,0.2);border-radius:10px;font-family:'Sora',sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;" onclick="alert('Annonce urgente en cours de création...');openModal();">🚨 Publier une urgence</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOUVELLE ANNONCE -->
+<div class="modal-overlay" id="modal" onclick="closeOut(event)">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span style="font-size:26px;">📣</span>
+      <div><h3>Nouvelle annonce Valve</h3><p>Visible par tous les utilisateurs de FasiChat</p></div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Titre *</label><input type="text" class="form-input" id="mTitle" placeholder="Titre de l'annonce..."></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Catégorie *</label><select class="form-select" id="mCat"><option>🚨 Urgent</option><option>📅 Convocation</option><option selected>📢 Information</option><option>🎓 Académique</option></select></div>
+        <div class="form-group"><label class="form-label">Expiration</label><input type="date" class="form-input"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Contenu *</label><textarea class="form-textarea" id="mContent" placeholder="Contenu de l'annonce..."></textarea></div>
+      <div class="form-group"><label class="form-label">Pièce jointe</label><input type="file" class="form-input" accept=".pdf,.doc,.docx"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn-ok" onclick="publishFromModal()">📣 Publier sur le Valve</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDIT -->
+<div class="modal-overlay" id="editModal" onclick="closeEditOut(event)">
+  <div class="modal">
+    <div class="modal-hdr" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);">
+      <span style="font-size:26px;">✏</span>
+      <div><h3>Modifier l'annonce</h3><p>Mettre à jour le contenu publié sur le Valve</p></div>
+      <button class="modal-close" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Titre *</label><input type="text" class="form-input" id="eTitle"></div>
+      <div class="form-group"><label class="form-label">Catégorie</label><select class="form-select"><option>🚨 Urgent</option><option>📅 Convocation</option><option>📢 Information</option><option>🎓 Académique</option></select></div>
+      <div class="form-group"><label class="form-label">Contenu *</label><textarea class="form-textarea" id="eContent" style="min-height:100px;"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeEditModal()">Annuler</button>
+      <button class="btn-ok" onclick="saveEdit()">💾 Enregistrer les modifications</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function setNav(el){document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));el.classList.add('active');}
+function openModal(){document.getElementById('modal').classList.add('open');}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+function closeOut(e){if(e.target.id==='modal')closeModal();}
+function openEditModal(title){
+  document.getElementById('eTitle').value=title;
+  document.getElementById('eContent').value='Contenu de l\'annonce à modifier...';
+  document.getElementById('editModal').classList.add('open');
+}
+function closeEditModal(){document.getElementById('editModal').classList.remove('open');}
+function closeEditOut(e){if(e.target.id==='editModal')closeEditModal();}
+function saveEdit(){closeEditModal();alert('Annonce modifiée avec succès !');}
+function publishFromModal(){
+  const t=document.getElementById('mTitle').value.trim();
+  const c=document.getElementById('mContent').value.trim();
+  if(!t||!c){alert('Veuillez remplir le titre et le contenu.');return;}
+  const cat=document.getElementById('mCat').value;
+  addAnnonce(t,c,cat);
+  closeModal();
+  document.getElementById('mTitle').value='';
+  document.getElementById('mContent').value='';
+}
+function publishAnnonce(){
+  const t=document.getElementById('compTitle').value.trim();
+  const c=document.getElementById('compContent').value.trim();
+  const cat=document.getElementById('compCat').value;
+  if(!t||!c){alert('Veuillez remplir le titre et le contenu.');return;}
+  addAnnonce(t,c,cat||'📢 Information');
+  document.getElementById('compTitle').value='';
+  document.getElementById('compContent').value='';
+  document.getElementById('compCat').value='';
+}
+function addAnnonce(title,content,cat){
+  const list=document.getElementById('annoncesList');
+  const now=new Date();
+  const time=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  const item=document.createElement('div');
+  item.className='annonce-item';
+  item.innerHTML=`<div class="ai-cat" style="background:rgba(99,102,241,0.1);">📢</div><div class="ai-body"><div class="ai-cat-tag" style="color:var(--indigo);">NOUVELLE</div><div class="ai-title">${title.replace(/</g,'&lt;')}</div><div class="ai-preview">${content.replace(/</g,'&lt;').substring(0,80)}...</div><div class="ai-meta"><span class="status-pill active-pill">● Actif</span><span>Aujourd'hui ${time}</span><span>👁 0 vues</span></div></div><div class="ai-actions"><button class="ai-btn edit">✏</button><button class="ai-btn del" onclick="deleteAnnonce(this)">🗑</button></div>`;
+  list.insertBefore(item,list.firstChild);
+  alert('Annonce publiée avec succès sur le Valve !');
+}
+function deleteAnnonce(btn){
+  if(confirm('Supprimer cette annonce du Valve ?')){
+    btn.closest('.annonce-item').style.animation='fadeOut 0.3s ease forwards';
+    setTimeout(()=>btn.closest('.annonce-item').remove(),300);
+  }
+}
+const style=document.createElement('style');
+style.textContent='@keyframes fadeOut{to{opacity:0;transform:translateX(20px);}}';
+document.head.appendChild(style);
+</script>
+</body>
+</html>
