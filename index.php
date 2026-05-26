@@ -667,15 +667,19 @@ try {
             </div>
 
             <div class="step">
+                ✅ Upload et compression des fichiers
+            </div>
+
+            <div class="step">
+                ✅ Valve et annonces officielles
+            </div>
+
+            <div class="step">
                 ⏳ Convocations administratives
             </div>
 
             <div class="step">
                 ⏳ Mur pédagogique interactif
-            </div>
-
-            <div class="step">
-                ⏳ Upload et gestion des fichiers
             </div>
 
             <div class="step">

@@ -24,8 +24,8 @@ if (!isset($_SESSION['user_id'])) {
 |--------------------------------------------------------------------------
 */
 
-$host = "localhost";
-$dbname = "campus_relay";
+$host     = "localhost";
+$dbname   = "campus_relay";
 $username = "root";
 $password = "1234";
 
@@ -52,10 +52,10 @@ try {
 |--------------------------------------------------------------------------
 */
 
-$userId       = $_SESSION['user_id'];
-$nom          = $_SESSION['user_nom'] ?? 'Utilisateur';
-$role         = $_SESSION['user_role'] ?? 'inconnu';
-$identifiant  = $_SESSION['user_identifiant'] ?? '---';
+$userId      = $_SESSION['user_id'];
+$nom         = $_SESSION['user_nom'] ?? 'Utilisateur';
+$role        = $_SESSION['user_role'] ?? 'inconnu';
+$identifiant = $_SESSION['user_identifiant'] ?? '---';
 
 /*
 |--------------------------------------------------------------------------
@@ -65,12 +65,12 @@ $identifiant  = $_SESSION['user_identifiant'] ?? '---';
 
 $rolesFR = [
 
-    'etudiant'     => 'Étudiant',
-    'enseignant'   => 'Enseignant',
-    'assistant'    => 'Assistant',
-    'doyen'        => 'Doyen',
-    'vice_doyen'   => 'Vice-Doyen',
-    'apparitaire'  => 'Apparitaire'
+    'etudiant'    => 'Étudiant',
+    'enseignant'  => 'Enseignant',
+    'assistant'   => 'Assistant',
+    'doyen'       => 'Doyen',
+    'vice_doyen'  => 'Vice-Doyen',
+    'apparitaire' => 'Apparitaire'
 ];
 
 $roleFR = $rolesFR[$role] ?? ucfirst($role);
@@ -83,19 +83,19 @@ $roleFR = $rolesFR[$role] ?? ucfirst($role);
 
 $roleColors = [
 
-    'etudiant'     => '#00f7ff',
-    'enseignant'   => '#ff00ff',
-    'assistant'    => '#00ff99',
-    'doyen'        => '#ffcc00',
-    'vice_doyen'   => '#ff6600',
-    'apparitaire'  => '#ff3366'
+    'etudiant'    => '#00f7ff',
+    'enseignant'  => '#ff00ff',
+    'assistant'   => '#00ff99',
+    'doyen'       => '#ffcc00',
+    'vice_doyen'  => '#ff6600',
+    'apparitaire' => '#ff3366'
 ];
 
 $mainColor = $roleColors[$role] ?? '#00f7ff';
 
 /*
 |--------------------------------------------------------------------------
-| ENVOI MESSAGE
+| ENVOI MESSAGE + FICHIER AVEC COMPRESSION
 |--------------------------------------------------------------------------
 */
 
@@ -108,7 +108,19 @@ if (
 
     $contenu = trim($_POST['message']);
 
-    if ($conversationId > 0 && !empty($contenu)) {
+    if (
+        $conversationId > 0
+        && (
+            !empty($contenu)
+            || !empty($_FILES['fichier']['name'])
+        )
+    ) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | INSERT MESSAGE
+        |--------------------------------------------------------------------------
+        */
 
         $stmt = $pdo->prepare("
             INSERT INTO messages
@@ -131,6 +143,156 @@ if (
             $contenu
         ]);
 
+        $messageId = $pdo->lastInsertId();
+
+        /*
+        |--------------------------------------------------------------------------
+        | UPLOAD FICHIER AVEC COMPRESSION
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            isset($_FILES['fichier'])
+            && $_FILES['fichier']['error'] === UPLOAD_ERR_OK
+        ) {
+
+            $uploadDir = "uploads/";
+
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+
+            $fileTmp  = $_FILES['fichier']['tmp_name'];
+            $fileType = $_FILES['fichier']['type'];
+            $fileSize = $_FILES['fichier']['size'];
+            $originalName = $_FILES['fichier']['name'];
+            
+            // Vérifier la taille max (20 Mo)
+            if ($fileSize > 20 * 1024 * 1024) {
+                header("Location: messagerie.php?conv=$conversationId&error=file_too_large");
+                exit;
+            }
+            
+            // Générer un nom unique
+            $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+            $fileName = time() . '_' . uniqid() . '.' . $extension;
+            $filePath = $uploadDir . $fileName;
+            
+            $isCompressed = false;
+            $finalSize = $fileSize;
+            
+            // Compression pour les images
+            if (strpos($fileType, 'image/') === 0) {
+                
+                // Créer l'image selon le type
+                switch ($fileType) {
+                    case 'image/jpeg':
+                    case 'image/jpg':
+                        $source = imagecreatefromjpeg($fileTmp);
+                        break;
+                    case 'image/png':
+                        $source = imagecreatefrompng($fileTmp);
+                        imagepalettetotruecolor($source);
+                        imagealphablending($source, true);
+                        imagesavealpha($source, true);
+                        break;
+                    case 'image/webp':
+                        $source = imagecreatefromwebp($fileTmp);
+                        break;
+                    case 'image/gif':
+                        $source = imagecreatefromgif($fileTmp);
+                        break;
+                    default:
+                        $source = null;
+                }
+                
+                if ($source) {
+                    $width = imagesx($source);
+                    $height = imagesy($source);
+                    
+                    $maxSize = 1200;
+                    $ratio = min($maxSize / $width, $maxSize / $height);
+                    
+                    if ($ratio < 1) {
+                        $newWidth = (int)($width * $ratio);
+                        $newHeight = (int)($height * $ratio);
+                    } else {
+                        $newWidth = $width;
+                        $newHeight = $height;
+                    }
+                    
+                    $compressed = imagecreatetruecolor($newWidth, $newHeight);
+                    
+                    if ($fileType === 'image/png') {
+                        imagealphablending($compressed, false);
+                        imagesavealpha($compressed, true);
+                        $transparent = imagecolorallocatealpha($compressed, 0, 0, 0, 127);
+                        imagefilledrectangle($compressed, 0, 0, $newWidth, $newHeight, $transparent);
+                    }
+                    
+                    imagecopyresampled($compressed, $source, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+                    
+                    switch ($fileType) {
+                        case 'image/jpeg':
+                        case 'image/jpg':
+                            imagejpeg($compressed, $filePath, 75);
+                            break;
+                        case 'image/png':
+                            imagepng($compressed, $filePath, 8);
+                            break;
+                        case 'image/webp':
+                            imagewebp($compressed, $filePath, 75);
+                            break;
+                        case 'image/gif':
+                            imagegif($compressed, $filePath);
+                            break;
+                        default:
+                            copy($fileTmp, $filePath);
+                    }
+                    
+                    imagedestroy($source);
+                    imagedestroy($compressed);
+                    
+                    $isCompressed = true;
+                    $finalSize = filesize($filePath);
+                } else {
+                    move_uploaded_file($fileTmp, $filePath);
+                }
+                
+            } else {
+                move_uploaded_file($fileTmp, $filePath);
+            }
+            
+            // Insérer dans la BDD
+            $stmt = $pdo->prepare("
+                INSERT INTO fichiers
+                (
+                    message_id,
+                    nom_original,
+                    chemin,
+                    type_mime,
+                    taille,
+                    est_compresse,
+                    taille_originale,
+                    cree_le
+                )
+                VALUES
+                (
+                    ?, ?, ?, ?, ?, ?, ?, NOW()
+                )
+            ");
+            
+            $stmt->execute([
+                $messageId,
+                $originalName,
+                $filePath,
+                $fileType,
+                $finalSize,
+                $isCompressed ? 1 : 0,
+                $fileSize
+            ]);
+        }
+
         header("Location: messagerie.php?conv=$conversationId");
         exit;
     }
@@ -147,16 +309,10 @@ if (
     && isset($_POST['new_conversation'])
 ) {
 
-    $titre = trim($_POST['titre'] ?? '');
+    $titre          = trim($_POST['titre'] ?? '');
     $destinataireId = (int) ($_POST['destinataire_id'] ?? 0);
 
     if (!empty($titre) && $destinataireId > 0) {
-
-        /*
-        |--------------------------------------------------------------------------
-        | INSERT CONVERSATION
-        |--------------------------------------------------------------------------
-        */
 
         $stmt = $pdo->prepare("
             INSERT INTO conversations
@@ -176,12 +332,6 @@ if (
         $stmt->execute([$titre]);
 
         $newConvId = $pdo->lastInsertId();
-
-        /*
-        |--------------------------------------------------------------------------
-        | PARTICIPANTS
-        |--------------------------------------------------------------------------
-        */
 
         $stmt = $pdo->prepare("
             INSERT INTO participants_conversation
@@ -207,7 +357,7 @@ if (
 
 /*
 |--------------------------------------------------------------------------
-| RÉCUPÉRATION CONVERSATIONS
+| CONVERSATIONS
 |--------------------------------------------------------------------------
 */
 
@@ -246,15 +396,9 @@ $convId = isset($_GET['conv'])
     : 0;
 
 $currentConv = null;
-$messages = [];
+$messages    = [];
 
 if ($convId > 0) {
-
-    /*
-    |--------------------------------------------------------------------------
-    | INFOS CONVERSATION
-    |--------------------------------------------------------------------------
-    */
 
     $stmt = $pdo->prepare("
         SELECT *
@@ -265,12 +409,6 @@ if ($convId > 0) {
     $stmt->execute([$convId]);
 
     $currentConv = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    /*
-    |--------------------------------------------------------------------------
-    | MESSAGES
-    |--------------------------------------------------------------------------
-    */
 
     $stmt = $pdo->prepare("
         SELECT
@@ -368,12 +506,6 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | NAVBAR
-        |--------------------------------------------------------------------------
-        */
-
         .navbar{
             height:80px;
             background:rgba(10,15,35,0.88);
@@ -421,22 +553,10 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             box-shadow:0 0 20px #ff0066;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | LAYOUT
-        |--------------------------------------------------------------------------
-        */
-
         .container{
             display:flex;
             height:calc(100vh - 80px);
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | SIDEBAR
-        |--------------------------------------------------------------------------
-        */
 
         .sidebar{
             width:340px;
@@ -476,12 +596,6 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             box-shadow:0 0 20px <?= $mainColor ?>;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | CONVERSATIONS
-        |--------------------------------------------------------------------------
-        */
-
         .conversation{
             display:block;
             padding:18px 22px;
@@ -509,12 +623,6 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             color:#cfd3ff;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | CHAT
-        |--------------------------------------------------------------------------
-        */
-
         .chat{
             flex:1;
             display:flex;
@@ -531,12 +639,6 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .chat-header h2{
             color:<?= $mainColor ?>;
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | MESSAGES
-        |--------------------------------------------------------------------------
-        */
 
         .messages{
             flex:1;
@@ -580,11 +682,41 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             opacity:0.75;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | INPUT
-        |--------------------------------------------------------------------------
-        */
+        .file-attachment{
+            margin-top:12px;
+            padding:10px 14px;
+            border-radius:12px;
+            background:rgba(255,255,255,0.10);
+        }
+
+        .file-attachment a{
+            text-decoration:none;
+            color:white;
+            font-size:13px;
+        }
+
+        .file-input-wrapper{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            background:rgba(255,255,255,0.08);
+            padding:0 14px;
+            border-radius:30px;
+        }
+
+        .file-label{
+            cursor:pointer;
+            font-size:22px;
+        }
+
+        .file-name{
+            font-size:12px;
+            max-width:120px;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+            color:#ccc;
+        }
 
         .input-area{
             padding:20px;
@@ -594,7 +726,7 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             border-top:1px solid rgba(255,255,255,0.08);
         }
 
-        .input-area input{
+        .input-area input[type="text"]{
             flex:1;
             padding:16px 20px;
             border:none;
@@ -625,12 +757,6 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             box-shadow:0 0 20px <?= $mainColor ?>;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | EMPTY
-        |--------------------------------------------------------------------------
-        */
-
         .empty{
             flex:1;
             display:flex;
@@ -640,16 +766,6 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             opacity:0.7;
             text-align:center;
         }
-
-        .empty h2{
-            margin-top:15px;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | MODAL
-        |--------------------------------------------------------------------------
-        */
 
         .modal{
             display:none;
@@ -715,31 +831,6 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             color:black;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | ANIMATION
-        |--------------------------------------------------------------------------
-        */
-
-        @keyframes fadeUp{
-
-            from{
-                opacity:0;
-                transform:translateY(15px);
-            }
-
-            to{
-                opacity:1;
-                transform:translateY(0);
-            }
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | RESPONSIVE
-        |--------------------------------------------------------------------------
-        */
-
         @media(max-width:900px){
 
             .container{
@@ -754,6 +845,10 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             .message{
                 max-width:90%;
             }
+
+            .input-area{
+                flex-wrap:wrap;
+            }
         }
 
     </style>
@@ -761,8 +856,6 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 
 <body>
-
-    <!-- NAVBAR -->
 
     <nav class="navbar">
 
@@ -784,7 +877,11 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 🆔 <?= htmlspecialchars($identifiant) ?>
             </div>
 
-            <a href="index.php" class="badge" style="text-decoration:none;color:white;">
+            <a
+                href="index.php"
+                class="badge"
+                style="text-decoration:none;color:white;"
+            >
                 🏠 Dashboard
             </a>
 
@@ -796,11 +893,7 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     </nav>
 
-    <!-- CONTAINER -->
-
     <div class="container">
-
-        <!-- SIDEBAR -->
 
         <aside class="sidebar">
 
@@ -845,8 +938,6 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         </aside>
 
-        <!-- CHAT -->
-
         <section class="chat">
 
             <?php if ($currentConv): ?>
@@ -869,6 +960,57 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                                 <?= nl2br(htmlspecialchars($msg['contenu'])) ?>
 
+                                <?php
+
+                                $stmtFiles = $pdo->prepare("
+                                    SELECT *
+                                    FROM fichiers
+                                    WHERE message_id = ?
+                                ");
+
+                                $stmtFiles->execute([$msg['id']]);
+
+                                $files = $stmtFiles->fetchAll(PDO::FETCH_ASSOC);
+
+                                ?>
+
+                                <?php foreach ($files as $file): ?>
+
+                                    <div class="file-attachment">
+
+                                        <a
+                                            href="<?= htmlspecialchars($file['chemin']) ?>"
+                                            target="_blank"
+                                        >
+                                            <?php
+                                            if (strpos($file['type_mime'], 'image/') === 0) {
+                                                echo '🖼️';
+                                            } elseif (strpos($file['type_mime'], 'video/') === 0) {
+                                                echo '🎬';
+                                            } elseif ($file['type_mime'] === 'application/pdf') {
+                                                echo '📄';
+                                            } else {
+                                                echo '📎';
+                                            }
+                                            ?>
+                                            <?= htmlspecialchars($file['nom_original']) ?>
+                                            —
+                                            <?= round($file['taille'] / 1024) ?> Ko
+                                            
+                                            <?php if ($file['est_compresse'] == 1): ?>
+                                                <span style="background:#00ff99; color:#000; padding:2px 8px; border-radius:12px; font-size:10px;">
+                                                    📦 compressé
+                                                </span>
+                                                <span style="font-size:10px; opacity:0.7;">
+                                                    (<?= round($file['taille_originale'] / 1024) ?> Ko → <?= round($file['taille'] / 1024) ?> Ko)
+                                                </span>
+                                            <?php endif; ?>
+                                        </a>
+
+                                    </div>
+
+                                <?php endforeach; ?>
+
                                 <small>
                                     <?= htmlspecialchars($msg['nom_complet']) ?>
                                     •
@@ -882,15 +1024,24 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <?php else: ?>
 
                         <div class="empty">
+
                             <h2>Aucun message</h2>
-                            <p>Commencez la discussion 🚀</p>
+
+                            <p>
+                                Commencez la discussion 🚀
+                            </p>
+
                         </div>
 
                     <?php endif; ?>
 
                 </div>
 
-                <form method="POST" class="input-area">
+                <form
+                    method="POST"
+                    class="input-area"
+                    enctype="multipart/form-data"
+                >
 
                     <input
                         type="hidden"
@@ -903,8 +1054,31 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         name="message"
                         placeholder="Écrire un message..."
                         autocomplete="off"
-                        required
                     >
+
+                    <div class="file-input-wrapper">
+
+                        <label
+                            for="file_upload"
+                            class="file-label"
+                        >
+                            📎
+                        </label>
+
+                        <input
+                            type="file"
+                            name="fichier"
+                            id="file_upload"
+                            accept="image/*,video/*,.pdf,.doc,.docx"
+                            style="display:none;"
+                        >
+
+                        <span
+                            class="file-name"
+                            id="fileName"
+                        ></span>
+
+                    </div>
 
                     <button type="submit">
                         Envoyer →
@@ -916,7 +1090,9 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                 <div class="empty">
 
-                    <div style="font-size:70px;">💬</div>
+                    <div style="font-size:70px;">
+                        💬
+                    </div>
 
                     <h2>
                         Sélectionnez une conversation
@@ -934,13 +1110,13 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     </div>
 
-    <!-- MODAL -->
-
     <div class="modal" id="modal">
 
         <div class="modal-content">
 
-            <h2>➕ Nouvelle conversation</h2>
+            <h2>
+                ➕ Nouvelle conversation
+            </h2>
 
             <form method="POST">
 
@@ -951,7 +1127,10 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     required
                 >
 
-                <select name="destinataire_id" required>
+                <select
+                    name="destinataire_id"
+                    required
+                >
 
                     <option value="">
                         Choisir un destinataire
@@ -962,6 +1141,7 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <option value="<?= $u['id'] ?>">
 
                             <?= htmlspecialchars($u['nom_complet']) ?>
+
                             —
                             <?= htmlspecialchars($rolesFR[$u['role']] ?? $u['role']) ?>
 
@@ -999,47 +1179,32 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <script>
 
-        /*
-        |--------------------------------------------------------------------------
-        | MODAL
-        |--------------------------------------------------------------------------
-        */
-
         function openModal(){
-
             document.getElementById('modal').style.display = 'flex';
         }
 
         function closeModal(){
-
             document.getElementById('modal').style.display = 'none';
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | SCROLL BAS
-        |--------------------------------------------------------------------------
-        */
 
         const messages = document.getElementById('messages');
 
         if(messages){
-
             messages.scrollTop = messages.scrollHeight;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | FERMER MODAL EN CLIQUANT DEHORS
-        |--------------------------------------------------------------------------
-        */
+        const fileUpload = document.getElementById('file_upload');
+
+        if(fileUpload){
+            fileUpload.addEventListener('change', function(e){
+                const fileName = e.target.files[0]?.name || '';
+                document.getElementById('fileName').textContent = fileName;
+            });
+        }
 
         window.onclick = function(e){
-
             const modal = document.getElementById('modal');
-
             if(e.target === modal){
-
                 closeModal();
             }
         }
