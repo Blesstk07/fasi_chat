@@ -152,6 +152,18 @@ try {
     $totalConversations = 0;
 }
 
+// Récupérer les convocations reçues pour enseignants/assistants
+$convocationsRecues = [];
+if ($role === 'enseignant' || $role === 'assistant') {
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM reunions WHERE audience = 'enseignants_assistants' ORDER BY date_reunion DESC LIMIT 5");
+        $stmt->execute();
+        $convocationsRecues = $stmt->fetchAll();
+    } catch (Exception $e) {
+        $convocationsRecues = [];
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -475,6 +487,20 @@ try {
             border-left-color:<?= $mainColor ?>;
         }
 
+        .convocation-item {
+            padding:16px 18px;
+            border-radius:16px;
+            margin-bottom:14px;
+            background:rgba(255,255,255,0.04);
+            transition:0.3s;
+            border-left:4px solid <?= $mainColor ?>;
+        }
+
+        .convocation-item:hover {
+            transform:translateX(8px);
+            background:rgba(255,255,255,0.08);
+        }
+
         /*
         |--------------------------------------------------------------------------
         | ANIMATIONS
@@ -608,6 +634,26 @@ try {
 
             </a>
 
+            <!-- Mur pédagogique - visible uniquement pour enseignants et assistants -->
+            <?php if ($role === 'enseignant' || $role === 'assistant'): ?>
+                <a href="mur_pedagogique.php" class="card">
+                    <div class="icon">📝</div>
+                    <h3>Mur pédagogique</h3>
+                    <div class="number">0</div>
+                    <div class="small-text">Publier une annonce</div>
+                </a>
+            <?php endif; ?>
+
+            <!-- Convocations - visible uniquement pour Doyen et Vice-Doyen -->
+            <?php if ($role === 'doyen' || $role === 'vice_doyen'): ?>
+                <a href="convocation.php" class="card">
+                    <div class="icon">📅</div>
+                    <h3>Convocations</h3>
+                    <div class="number">0</div>
+                    <div class="small-text">Réunions officielles</div>
+                </a>
+            <?php endif; ?>
+
             <div class="card">
 
                 <div class="icon">👥</div>
@@ -675,11 +721,11 @@ try {
             </div>
 
             <div class="step">
-                ⏳ Convocations administratives
+                ✅ Mur pédagogique
             </div>
 
             <div class="step">
-                ⏳ Mur pédagogique interactif
+                ✅ Convocations administratives
             </div>
 
             <div class="step">
@@ -687,6 +733,23 @@ try {
             </div>
 
         </section>
+
+        <!-- Convocations reçues pour enseignants et assistants -->
+        <?php if (($role === 'enseignant' || $role === 'assistant') && !empty($convocationsRecues)): ?>
+            <div class="roadmap" style="margin-top: 30px;">
+                <h2>📅 Convocations reçues</h2>
+                <?php foreach ($convocationsRecues as $conv): ?>
+                    <div class="convocation-item">
+                        <strong><?= htmlspecialchars($conv['titre']) ?></strong><br>
+                        📍 <?= htmlspecialchars($conv['lieu']) ?> • 
+                        📅 <?= date('d/m/Y', strtotime($conv['date_reunion'])) ?> à <?= substr($conv['heure_reunion'], 0, 5) ?>
+                        <?php if ($conv['note']): ?>
+                            <br><span style="font-size: 12px; color: #9ea9ff;">📝 <?= htmlspecialchars(substr($conv['note'], 0, 100)) ?></span>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
 
     </div>
 
