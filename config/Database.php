@@ -15,17 +15,16 @@ class Database{
         $this -> connexion;
     }
     
-    private function connect (){
+    private function connect(){
         try {
             // dsn = data source name
-            $dsn = "mysql: host = {$this -> host}"
-                    ."; dbName= {$this -> dbName}"
-                    ."; charset = utf8";
+            $dsn = "mysql:host={$this->host};dbname={$this->dbName};charset=utf8";
 
-            $this -> connexion = new PDO(
+            $this->connexion = new PDO(
                 $dsn,
-                $this -> username,
-                $this -> password );
+                $this->username,
+                $this->password
+            );
 
             // setAttribute permet de gérer les erreurs SQL
             $this -> connexion -> setAttribute (

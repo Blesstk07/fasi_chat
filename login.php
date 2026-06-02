@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -70,12 +73,20 @@
       <button class="role-btn" onclick="setRole(this)">Assistant</button>
     </div>
 
-    <form action="dashboard_etudiant.html" method="get">
+    <?php
+      if (!empty($_SESSION["erreur"])) {
+          echo '<div class="error-message">' . $_SESSION["erreur"] . '</div>';
+          unset($_SESSION["erreur"]); // Supprime l'erreur après l'affichage
+      }
+    ?>
+
+    <!-- Formulaire de connexion -->
+    <form action="controllers/login.php" method="post">
       <div class="form-group">
-        <label class="form-label">Identifiant / Matricule</label>
+        <label class="form-label">Email</label>
         <div class="input-wrapper">
           <span class="input-icon">👤</span>
-          <input type="text" name="matricule" class="form-input" placeholder="Ex: ET2024001" required>
+          <input type="email" name="email" class="form-input" placeholder="exemple@domaine.com" required>
         </div>
       </div>
 
@@ -89,7 +100,7 @@
 
       <div class="form-row">
         <label class="checkbox-wrap">
-          <input type="checkbox">
+          <input type="checkbox" name="remember_me">
           <span class="custom-check">✓</span>
           <span class="checkbox-label">Se souvenir de moi</span>
         </label>
