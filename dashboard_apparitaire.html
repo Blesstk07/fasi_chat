@@ -16,16 +16,11 @@
   <div class="role-badge"><div class="rdot"></div><span>APPARITAIRE — Gestion du Valve</span></div>
   <div class="nav-section">
     <div class="nav-label-section">Gestion Valve</div>
-    <div class="nav-item active" onclick="setNav(this)"><div class="nav-icon" style="background:rgba(99,102,241,0.12);">📊</div><div><div class="nl">Tableau de bord</div><div class="ns">Vue d'ensemble</div></div></div>
+    <div class="nav-item active" data-view="dashboard" onclick="showView('dashboard')"><div class="nav-icon" style="background:rgba(99,102,241,0.12);">📊</div><div><div class="nl">Tableau de bord</div><div class="ns">Vue d'ensemble</div></div></div>
     <div class="nav-item" onclick="openModal()"><div class="nav-icon" style="background:rgba(34,197,94,0.12);">➕</div><div><div class="nl">Nouvelle annonce</div><div class="ns">Publier sur le Valve</div></div></div>
-    <div class="nav-item" onclick="setNav(this)"><div class="nav-icon" style="background:rgba(245,158,11,0.12);">📋</div><div><div class="nl">Gérer les annonces</div><div class="ns">Modifier / Supprimer</div></div><div class="nb">6</div></div>
+    <div class="nav-item" onclick="setNav(this)"><div class="nav-icon" style="background:rgba(245,158,11,0.12);">📋</div><div><div class="nl">Gérer les annonces</div><div class="ns">Modifier / Supprimer</div></div><div class="nb" id="navBadge">0</div></div>
+    <div class="nav-item" data-view="stats" onclick="showView('stats')"><div class="nav-icon" style="background:rgba(56,189,248,0.12);">📈</div><div><div class="nl">Statistiques</div><div class="ns">Analyses détaillées</div></div></div>
     <div class="nav-item" onclick="setNav(this)"><div class="nav-icon" style="background:rgba(239,68,68,0.12);">🚨</div><div><div class="nl">Urgences</div><div class="ns">Priorité haute</div></div></div>
-  </div>
-  <div class="nav-section">
-    <div class="nav-label-section">Navigation</div>
-    <div class="nav-item" onclick="location.href='valve.html'"><div class="nav-icon" style="background:rgba(99,102,241,0.08);">📣</div><div><div class="nl">Voir le Valve public</div><div class="ns">Vue utilisateur</div></div></div>
-    <div class="nav-item" onclick="location.href='dashboard_admin.html'"><div class="nav-icon" style="background:rgba(220,38,38,0.08);">🏛</div><div><div class="nl">Espace Doyen</div><div class="ns">Administration</div></div></div>
-    <div class="nav-item" onclick="location.href='dashboard_etudiant.html'"><div class="nav-icon" style="background:rgba(79,163,224,0.08);">🎓</div><div><div class="nl">Vue Étudiant</div><div class="ns">Dashboard étudiant</div></div></div>
   </div>
   <div class="sidebar-bottom">
     <div class="profile-ava"><div class="online-dot"></div>🗂</div>
@@ -47,6 +42,7 @@
   </div>
 
   <div class="content">
+    <div id="dashboardView">
     <div class="stats-row">
       <div class="stat-card sc-indigo"><div class="si">📣</div><div class="sn">6</div><div class="sl">Annonces actives</div><div class="st">Sur le Valve public</div></div>
       <div class="stat-card sc-red"><div class="si">🚨</div><div class="sn">1</div><div class="sl">Urgence active</div><div class="st">Priorité maximale</div></div>
@@ -101,8 +97,11 @@
         <!-- ANNONCES LIST -->
         <div class="card">
           <div class="card-header">
-            <div class="card-title">📋 Annonces publiées (6)</div>
+            <div class="card-title">📋 Annonces publiées (<span id="annonceCount">0</span>)</div>
             <button class="card-action" onclick="location.href='valve.html'">Voir le Valve public →</button>
+          </div>
+          <div style="padding:10px 20px;border-bottom:1px solid var(--gray-100);">
+            <input type="text" class="form-input" id="searchInput" placeholder="🔍 Rechercher par titre..." style="font-size:12px;margin:0;" oninput="filterAnnonces()">
           </div>
           <div class="annonces-list" id="annoncesList">
             <div class="annonce-item">
@@ -256,8 +255,74 @@
         </div>
       </div>
     </div>
+    </div>
+    </div>
   </div>
-</div>
+
+  <!-- STATS VIEW -->
+  <div id="statsView" style="display:none;">
+    <div class="stats-row">
+      <div class="stat-card sc-indigo"><div class="si">📣</div><div class="sn" id="statsTotal">0</div><div class="sl">Annonces totales</div><div class="st">Toutes catégories confondues</div></div>
+      <div class="stat-card sc-red"><div class="si">🚨</div><div class="sn" id="statsUrgent">0</div><div class="sl">Urgences</div><div class="st">Priorité maximale</div></div>
+      <div class="stat-card sc-gold"><div class="si">📅</div><div class="sn" id="statsConvocation">0</div><div class="sl">Convocations</div><div class="st">Doyen &amp; Vice-Doyen</div></div>
+      <div class="stat-card sc-green"><div class="si">👁</div><div class="sn" id="statsVues">0</div><div class="sl">Vues totales</div><div class="st">Toutes annonces cumulées</div></div>
+    </div>
+
+    <div class="main-grid">
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="card">
+          <div class="card-header"><div class="card-title">📊 Répartition par catégorie</div></div>
+          <div style="padding:18px 20px;">
+            <div class="bar-item">
+              <div class="bar-label">🚨 Urgent <span id="catUrgentCount">0</span></div>
+              <div class="bar-track"><div class="bar-fill" id="catUrgentBar" style="width:0%;background:linear-gradient(90deg,#ef4444,#dc2626);"></div></div>
+            </div>
+            <div class="bar-item">
+              <div class="bar-label">📅 Convocation <span id="catConvocationCount">0</span></div>
+              <div class="bar-track"><div class="bar-fill" id="catConvocationBar" style="width:0%;background:linear-gradient(90deg,#f59e0b,#d97706);"></div></div>
+            </div>
+            <div class="bar-item">
+              <div class="bar-label">📢 Information <span id="catInfoCount">0</span></div>
+              <div class="bar-track"><div class="bar-fill" id="catInfoBar" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a);"></div></div>
+            </div>
+            <div class="bar-item">
+              <div class="bar-label">🎓 Académique <span id="catAcademiqueCount">0</span></div>
+              <div class="bar-track"><div class="bar-fill" id="catAcademiqueBar" style="width:0%;background:linear-gradient(90deg,var(--indigo),#4f46e5);"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">🕐 Activité récente</div></div>
+          <div id="recentActivityList" style="padding:8px 0;">
+            <div style="padding:20px;text-align:center;color:var(--gray-400);font-size:12px;">Chargement...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="right-col">
+        <div class="stat-small">
+          <div class="stat-small-title">👁 Aperçu des vues</div>
+          <div style="font-size:36px;font-weight:700;color:var(--indigo);margin-bottom:4px;" id="totalViewsBig">0</div>
+          <div style="font-size:11px;color:var(--gray-400);">vues cumulées sur toutes les annonces</div>
+          <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--gray-100);">
+            <div style="font-size:11px;font-weight:600;color:var(--navy);margin-bottom:10px;">Performance</div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--gray-600);margin-bottom:6px;">
+              <span>Moyenne vues / annonce</span>
+              <span style="font-weight:700;color:var(--navy);" id="avgViews">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-small">
+          <div class="stat-small-title">📊 Distribution</div>
+          <div id="distLabels" style="padding:4px 0;">
+            <div style="font-size:11px;color:var(--gray-400);">Chargement...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 <!-- MODAL NOUVELLE ANNONCE -->
 <div class="modal-overlay" id="modal" onclick="closeOut(event)">
@@ -303,58 +368,6 @@
   </div>
 </div>
 
-<script>
-function setNav(el){document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));el.classList.add('active');}
-function openModal(){document.getElementById('modal').classList.add('open');}
-function closeModal(){document.getElementById('modal').classList.remove('open');}
-function closeOut(e){if(e.target.id==='modal')closeModal();}
-function openEditModal(title){
-  document.getElementById('eTitle').value=title;
-  document.getElementById('eContent').value='Contenu de l\'annonce à modifier...';
-  document.getElementById('editModal').classList.add('open');
-}
-function closeEditModal(){document.getElementById('editModal').classList.remove('open');}
-function closeEditOut(e){if(e.target.id==='editModal')closeEditModal();}
-function saveEdit(){closeEditModal();alert('Annonce modifiée avec succès !');}
-function publishFromModal(){
-  const t=document.getElementById('mTitle').value.trim();
-  const c=document.getElementById('mContent').value.trim();
-  if(!t||!c){alert('Veuillez remplir le titre et le contenu.');return;}
-  const cat=document.getElementById('mCat').value;
-  addAnnonce(t,c,cat);
-  closeModal();
-  document.getElementById('mTitle').value='';
-  document.getElementById('mContent').value='';
-}
-function publishAnnonce(){
-  const t=document.getElementById('compTitle').value.trim();
-  const c=document.getElementById('compContent').value.trim();
-  const cat=document.getElementById('compCat').value;
-  if(!t||!c){alert('Veuillez remplir le titre et le contenu.');return;}
-  addAnnonce(t,c,cat||'📢 Information');
-  document.getElementById('compTitle').value='';
-  document.getElementById('compContent').value='';
-  document.getElementById('compCat').value='';
-}
-function addAnnonce(title,content,cat){
-  const list=document.getElementById('annoncesList');
-  const now=new Date();
-  const time=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
-  const item=document.createElement('div');
-  item.className='annonce-item';
-  item.innerHTML=`<div class="ai-cat" style="background:rgba(99,102,241,0.1);">📢</div><div class="ai-body"><div class="ai-cat-tag" style="color:var(--indigo);">NOUVELLE</div><div class="ai-title">${title.replace(/</g,'&lt;')}</div><div class="ai-preview">${content.replace(/</g,'&lt;').substring(0,80)}...</div><div class="ai-meta"><span class="status-pill active-pill">● Actif</span><span>Aujourd'hui ${time}</span><span>👁 0 vues</span></div></div><div class="ai-actions"><button class="ai-btn edit">✏</button><button class="ai-btn del" onclick="deleteAnnonce(this)">🗑</button></div>`;
-  list.insertBefore(item,list.firstChild);
-  alert('Annonce publiée avec succès sur le Valve !');
-}
-function deleteAnnonce(btn){
-  if(confirm('Supprimer cette annonce du Valve ?')){
-    btn.closest('.annonce-item').style.animation='fadeOut 0.3s ease forwards';
-    setTimeout(()=>btn.closest('.annonce-item').remove(),300);
-  }
-}
-const style=document.createElement('style');
-style.textContent='@keyframes fadeOut{to{opacity:0;transform:translateX(20px);}}';
-document.head.appendChild(style);
-</script>
+<script src="assets/js/dashboard_apparitaire.js"></script>
 </body>
 </html>

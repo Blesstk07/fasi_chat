@@ -1,18 +1,22 @@
+const API_BASE = '/FasiChatClassRoom/api';
+
 function setRole(btn) {
   document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  const role = btn.textContent.trim();
-  const form = btn.closest('.right-panel').querySelector('form');
-  if (role === 'Enseignant' || role === 'Assistant') {
-    form.action = 'dashboard_enseignant.html';
-  } else {
-    form.action = 'dashboard_etudiant.html';
-  }
 }
-// Checkbox toggle
-document.querySelectorAll('.checkbox-wrap').forEach(wrap => {
-  wrap.addEventListener('click', () => {
-    const cb = wrap.querySelector('input');
-    cb.checked = !cb.checked;
-  });
+
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const formData = new FormData(this);
+  try {
+    const res = await fetch(API_BASE + '/login.php', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (data.success) {
+      window.location.href = data.redirect;
+    } else {
+      alert(data.error || 'Identifiants incorrects.');
+    }
+  } catch (err) {
+    alert('Erreur de connexion au serveur.');
+  }
 });

@@ -638,3 +638,111 @@ body {
 }
 .tag-blue { background: var(--sky-pale); color: var(--sky); border: 1px solid rgba(79,163,224,0.2); }
 .tag-navy { background: rgba(10,22,40,0.07); color: var(--navy); border: 1px solid rgba(10,22,40,0.1); }
+
+/* Empty state */
+.empty-state-msg {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-400);
+  text-align: center;
+  padding: 40px;
+}
+.empty-state-msg .icon { font-size: 48px; margin-bottom: 16px; }
+.empty-state-msg h3 { font-size: 18px; color: var(--gray-600); margin-bottom: 8px; }
+.empty-state-msg p { font-size: 13px; color: var(--gray-400); }
+
+/* Emoji picker */
+.emoji-picker {
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  margin-top: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+.emoji-picker span {
+  cursor: pointer;
+  font-size: 22px;
+  transition: transform 0.15s;
+}
+.emoji-picker span:hover { transform: scale(1.3); }
+
+/* Reaction buttons */
+.reaction-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 4px;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+  border-radius: 4px;
+}
+.reaction-btn:hover { opacity: 1; background: rgba(0,0,0,0.05); }
+.msg-reactions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.reaction-display {
+  font-size: 12px;
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Cours cards */
+#cours-panel { flex: 1; overflow-y: auto; padding: 8px; }
+#cours-panel::-webkit-scrollbar { width: 3px; }
+#cours-panel::-webkit-scrollbar-track { background: transparent; }
+#cours-panel::-webkit-scrollbar-thumb { background: rgba(79,163,224,0.2); border-radius: 2px; }
+
+.cours-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(79,163,224,0.1);
+  border-radius: 12px;
+  padding: 14px;
+  margin: 6px 10px;
+  transition: all 0.2s;
+}
+.cours-card:hover { background: rgba(255,255,255,0.07); border-color: rgba(79,163,224,0.2); }
+.cours-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.cours-card-header h4 { font-size: 13px; font-weight: 600; color: var(--white); }
+.cours-code { font-size: 10px; color: var(--sky); font-weight: 600; background: rgba(79,163,224,0.12); padding: 2px 8px; border-radius: 6px; }
+.cours-card-desc { font-size: 11px; color: var(--gray-400); margin-bottom: 10px; line-height: 1.4; }
+.cours-card-footer { display: flex; justify-content: space-between; align-items: center; }
+.cours-promo { font-size: 10px; color: var(--gray-400); }
+.btn-rejoindre {
+  background: var(--sky);
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-family: 'Sora', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-rejoindre:hover { background: var(--accent); transform: scale(1.03); }
+.btn-inscrit {
+  background: rgba(34,197,94,0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34,197,94,0.2);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-family: 'Sora', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: default;
+}

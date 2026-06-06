@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FasiChat — Valve Faculté</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/valve.css">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="brand-mark">💬</div>
+    <div class="brand-info"><h3>FasiChat</h3><span>Valve — Tableau d'affichage</span></div>
+  </div>
+  <div class="nav-tabs">
+    <button id="nav-tab-chat" class="nav-tab">💬 Chat</button>
+    <button class="nav-tab active">📣 Valve</button>
+    <button id="nav-tab-admin" class="nav-tab">🏛 Admin</button>
+  </div>
+  <div class="sidebar-cats">
+    <div class="section-label">Catégories</div>
+    <div class="cat-item active">
+      <div class="cat-icon" style="background:rgba(79,163,224,0.15);">📋</div>
+      <div class="cat-info"><div class="cat-name">Toutes les annonces</div><div class="cat-count">6 publications</div></div>
+    </div>
+    <div class="cat-item">
+      <div class="cat-icon" style="background:rgba(239,68,68,0.12);">🚨</div>
+      <div class="cat-info"><div class="cat-name">Urgences</div><div class="cat-count">1 publication</div></div>
+      <div class="cat-badge">1</div>
+    </div>
+    <div class="cat-item">
+      <div class="cat-icon" style="background:rgba(245,158,11,0.12);">📅</div>
+      <div class="cat-info"><div class="cat-name">Convocations</div><div class="cat-count">2 publications</div></div>
+    </div>
+    <div class="cat-item">
+      <div class="cat-icon" style="background:rgba(34,197,94,0.12);">📢</div>
+      <div class="cat-info"><div class="cat-name">Informations</div><div class="cat-count">2 publications</div></div>
+    </div>
+    <div class="cat-item">
+      <div class="cat-icon" style="background:rgba(99,102,241,0.12);">🎓</div>
+      <div class="cat-info"><div class="cat-name">Académique</div><div class="cat-count">1 publication</div></div>
+    </div>
+    <div class="section-label" style="margin-top:10px;">Navigation rapide</div>
+    <div class="cat-item" data-nav="etudiant" onclick="location.href='dashboard_etudiant.html'">
+      <div class="cat-icon" style="background:rgba(79,163,224,0.1);">🎓</div>
+      <div class="cat-info"><div class="cat-name">Mon espace étudiant</div><div class="cat-count">Retour au chat</div></div>
+    </div>
+    <div class="cat-item" data-nav="enseignant" onclick="location.href='dashboard_enseignant.html'">
+      <div class="cat-icon" style="background:rgba(245,158,11,0.1);">👨‍🏫</div>
+      <div class="cat-info"><div class="cat-name">Espace enseignant</div><div class="cat-count">Voir le mur péda.</div></div>
+    </div>
+  </div>
+  <div class="sidebar-profile">
+    <div class="profile-avatar" style="background:linear-gradient(135deg,#6366f1,#4f46e5);">
+      <div class="online-dot"></div>🗂
+    </div>
+    <div class="profile-info">
+      <h4 id="profile-name">Chargement...</h4>
+      <span id="profile-role" style="color:#a5b4fc;font-size:10px;"></span>
+    </div>
+    <a href="login.html" class="icon-btn">🚪</a>
+  </div>
+</div>
+
+<!-- MAIN AREA -->
+<div class="main-area">
+  <div id="valve-auth-wall" class="valve-auth-wall" style="display:none;">
+    <div class="valve-auth-content">
+      <div class="valve-auth-icon">🔒</div>
+      <h2>Accès restreint</h2>
+      <p>Vous devez être connecté pour accéder au Valve de la Faculté des Sciences Informatiques.</p>
+      <a href="login.html" class="vt-btn primary">Se connecter</a>
+    </div>
+  </div>
+  <!-- Topbar -->
+  <div class="valve-topbar">
+    <div class="valve-topbar-icon">📣</div>
+    <div class="valve-topbar-info">
+      <h3>Valve — Faculté des Sciences Informatiques</h3>
+      <p>Tableau d'affichage officiel · Géré par l'Apparitaire</p>
+    </div>
+    <div class="valve-topbar-actions">
+      <button id="btn-statistiques" class="vt-btn ghost">📊 Statistiques</button>
+      <button id="btn-new-annonce" class="vt-btn primary" onclick="openModal()">+ Nouvelle annonce</button>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <button class="filter-chip active">Toutes</button>
+    <button class="filter-chip">🚨 Urgences</button>
+    <button class="filter-chip">📅 Convocations</button>
+    <button class="filter-chip">📢 Infos</button>
+    <button class="filter-chip">🎓 Académique</button>
+    <div class="filter-spacer"></div>
+    <div class="search-valve">
+      <span class="s-ico">🔍</span>
+      <input id="search-input" type="text" placeholder="Rechercher une annonce...">
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="valve-content">
+    <!-- Hero -->
+    <div class="valve-hero">
+      <div>
+        <div class="hero-badge">TABLEAU D'AFFICHAGE OFFICIEL</div>
+        <h2>Bienvenue sur le Valve 📣</h2>
+        <p>Toutes les annonces officielles de la Faculté des Sciences Informatiques. Consultez régulièrement cet espace pour rester informé des actualités, convocations et événements importants.</p>
+        <div class="hero-stats">
+          <div class="hero-stat"><div class="n">6</div><div class="l">ANNONCES</div></div>
+          <div class="hero-stat"><div class="n">1</div><div class="l">URGENCE</div></div>
+          <div class="hero-stat"><div class="n">2</div><div class="l">CONVOCATIONS</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Annonces grid -->
+    <div class="annonces-grid"></div>
+  </div>
+</div>
+
+<!-- COMPOSE MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-icon">📣</div>
+      <div>
+        <h3>Nouvelle annonce</h3>
+        <p>Publication sur le Valve — visible par tous les utilisateurs</p>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Titre de l'annonce *</label>
+        <input type="text" class="form-input" placeholder="Ex: Réunion du conseil pédagogique...">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Catégorie *</label>
+          <select class="form-select">
+            <option value="">Choisir une catégorie</option>
+            <option value="urgent">🚨 Urgent</option>
+            <option value="convocation">📅 Convocation</option>
+            <option value="info">📢 Information</option>
+            <option value="academique">🎓 Académique</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date d'expiration</label>
+          <input type="date" class="form-input">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contenu de l'annonce *</label>
+        <textarea class="form-textarea" placeholder="Rédigez le contenu de votre annonce ici..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Pièce jointe (optionnel)</label>
+        <input type="file" class="form-input" accept=".pdf,.doc,.docx">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn-publish" onclick="publishAnnonce()">📣 Publier sur le Valve</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/valve.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+RewriteEngine On
+
+# Redirect to login if accessing root
+RewriteRule ^$ login.html [L]
+
+# API routing
+RewriteRule ^api/(.*)$ api/$1 [L,QSA]
+
+# Serve static files
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+
+# Security
+<FilesMatch "\.(env|sql|md)$">
+    Deny from all
+</FilesMatch>

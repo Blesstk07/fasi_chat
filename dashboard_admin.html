@@ -128,6 +128,9 @@
           <div class="card-title">👥 Utilisateurs récents</div>
           <button class="card-action">Voir tous →</button>
         </div>
+        <div style="padding:8px 20px;border-bottom:1px solid var(--gray-100);">
+          <input type="text" id="searchUsers" class="form-input" placeholder="🔍 Rechercher un utilisateur..." style="font-size:12px;margin:0;" oninput="filterUsers()">
+        </div>
         <div style="overflow-x:auto;">
           <table class="users-table">
             <thead>
@@ -138,44 +141,7 @@
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td><div class="user-cell"><div class="user-row-ava" style="background:linear-gradient(135deg,#dc2626,#991b1b);">AB</div><div><div class="user-name">Pr. KUTANGILA</div><div class="user-email">doyen@faculte.edu</div></div></div></td>
-                <td><span class="role-pill role-doyen">🏛 Doyen</span></td>
-                <td><span class="status-dot-sm dot-online"></span><span style="font-size:11px;color:#16a34a;font-weight:600;">En ligne</span></td>
-                <td><div class="action-btns"><button class="act-btn edit">✏</button></div></td>
-              </tr>
-              <tr>
-                <td><div class="user-cell"><div class="user-row-ava" style="background:linear-gradient(135deg,#7c3aed,#5b21b6);">VD</div><div><div class="user-name">Pr. MANPUYA</div><div class="user-email">vdoyen@faculte.edu</div></div></div></td>
-                <td><span class="role-pill" style="background:rgba(124,58,237,0.1);color:#7c3aed;border:1px solid rgba(124,58,237,0.2);">🏅 Vice-Doyen</span></td>
-                <td><span class="status-dot-sm dot-online"></span><span style="font-size:11px;color:#16a34a;font-weight:600;">En ligne</span></td>
-                <td><div class="action-btns"><button class="act-btn edit">✏</button></div></td>
-              </tr>
-              <tr>
-                <td><div class="user-cell"><div class="user-row-ava" style="background:linear-gradient(135deg,#6366f1,#4f46e5);">MS</div><div><div class="user-name">DJ. ROLLY</div><div class="user-email">apparitaire@faculte.edu</div></div></div></td>
-                <td><span class="role-pill role-apparitaire">🗂 Apparitaire</span></td>
-                <td><span class="status-dot-sm dot-online"></span><span style="font-size:11px;color:#16a34a;font-weight:600;">En ligne</span></td>
-                <td><div class="action-btns"><button class="act-btn edit">✏</button></div></td>
-              </tr>
-              <tr>
-                <td><div class="user-cell"><div class="user-row-ava" style="background:linear-gradient(135deg,#f59e0b,#d97706);">PM</div><div><div class="user-name">Prof. KABEYA</div><div class="user-email">mbaye@faculte.edu</div></div></div></td>
-                <td><span class="role-pill role-enseignant">👨‍🏫 Enseignant</span></td>
-                <td><span class="status-dot-sm dot-online"></span><span style="font-size:11px;color:#16a34a;font-weight:600;">En ligne</span></td>
-                <td><div class="action-btns"><button class="act-btn edit">✏</button><button class="act-btn del">🗑</button></div></td>
-              </tr>
-              <tr>
-                <td><div class="user-cell"><div class="user-row-ava" style="background:linear-gradient(135deg,#var(--sky),#0284c7);" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);">AF</div><div><div class="user-name">JORDY BIAYA</div><div class="user-email">SI2024001</div></div></div></td>
-                <td><span class="role-pill role-etudiant">🎓 Étudiant</span></td>
-                <td><span class="status-dot-sm dot-online"></span><span style="font-size:11px;color:#16a34a;font-weight:600;">En ligne</span></td>
-                <td><div class="action-btns"><button class="act-btn edit">✏</button><button class="act-btn del">🗑</button></div></td>
-              </tr>
-              <tr>
-                <td><div class="user-cell"><div class="user-row-ava" style="background:linear-gradient(135deg,#14b8a6,#0d9488);">AM</div><div><div class="user-name">MIRIAM YULILA</div><div class="user-email">SI2024002</div></div></div></td>
-                <td><span class="role-pill role-etudiant">🎓 Étudiant</span></td>
-                <td><span class="status-dot-sm dot-offline"></span><span style="font-size:11px;color:var(--gray-400);font-weight:600;">Hors ligne</span></td>
-                <td><div class="action-btns"><button class="act-btn edit">✏</button><button class="act-btn del">🗑</button></div></td>
-              </tr>
-            </tbody>
+            <tbody id="usersTableBody"></tbody>
           </table>
         </div>
       </div>

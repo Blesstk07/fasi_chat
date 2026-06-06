@@ -19,7 +19,7 @@
     <button class="nav-tab active" onclick="showView('students',this)">👥 Étudiants</button>
     <button class="nav-tab" onclick="showView('mur',this)">📋 Mur</button>
     <button class="nav-tab" onclick="showView('msgs',this)">💬 Messages</button>
-    <button class="nav-tab" onclick="location.href='valve.php'">📣 Valve</button>
+    <button class="nav-tab" onclick="location.href='valve.html'">📣 Valve</button>
   </div>
   <div class="sidebar-search">
     <div class="search-wrap">
@@ -29,39 +29,12 @@
   </div>
   <div class="conv-list">
     <div class="section-label">Mes Cours</div>
-    <div class="conv-item active" onclick="selectConv(this,'Programation Web — L2 Info','👩‍💻','gradient(135deg,#3b82f6,#1d4ed8)','28 étudiants · 3 en ligne','public')">
-      <div class="avatar" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">🖥</div>
-      <div class="conv-info"><div class="conv-name">Programation Web — L2 FASI</div><div class="conv-preview">450 étudiants</div></div>
-      <div class="conv-meta"><div class="conv-time">Actif</div><div class="conv-badge">5</div></div>
-    </div>
-    <div class="conv-item" onclick="selectConv(this,'Cybersécurité M1','🔐','linear-gradient(135deg,#14b8a6,#0d9488)','15 étudiants · 1 en ligne','public')">
-      <div class="avatar" style="background:linear-gradient(135deg,#14b8a6,#0d9488);">🔐</div>
-      <div class="conv-info"><div class="conv-name">Cybersécurité avancée L4</div><div class="conv-preview">50 étudiants</div></div>
-      <div class="conv-meta"><div class="conv-time">Actif</div></div>
-    </div>
-
-    <div class="section-label">Collègues (Privé)</div>
-    <div class="conv-item" onclick="location.href='dashboard_enseignant.html'">
-      <div class="avatar" style="background:linear-gradient(135deg,#6366f1,#4f46e5);font-size:12px;font-weight:700;">AD</div>
-      <div class="conv-info"><div class="conv-name">Prof. KABEYA</div><div class="conv-preview">D'accord pour jeudi 14h</div></div>
-      <div class="conv-meta"><div class="conv-time">11:30</div></div>
-    </div>
-    <div class="conv-item" onclick="location.href='dashboard_enseignant.html'">
-      <div class="avatar" style="background:linear-gradient(135deg,#f59e0b,#d97706);font-size:12px;font-weight:700;">SK</div>
-      <div class="conv-info"><div class="conv-name">Ass. MBUYAMBA</div><div class="conv-preview">J'ai corrigé les copies</div></div>
-      <div class="conv-meta"><div class="conv-time">Hier</div></div>
-    </div>
-
+    <div class="section-label" style="margin-top:10px;">Collègues (Privé)</div>
     <div class="section-label">Convocations reçues</div>
-    <div class="conv-item" onclick="location.href='dashboard_enseignant.html'">
-      <div class="avatar" style="background:linear-gradient(135deg,#dc2626,#991b1b);">🏛</div>
-      <div class="conv-info"><div class="conv-name">Doyen — Réunion</div><div class="conv-preview">Conseil pédagogique vendredi</div></div>
-      <div class="conv-meta"><div class="conv-time">08:00</div><div class="conv-badge-warn">!</div></div>
-    </div>
   </div>
   <div class="sidebar-profile">
     <div class="profile-avatar"><div class="online-dot"></div>👨‍🏫</div>
-    <div class="profile-info"><h4>Prof. MANPUYA</h4><span>Enseignant · PHP & Cyber</span></div>
+    <div class="profile-info"><h4>Chargement...</h4><span>Enseignant</span></div>
     <div class="profile-actions"><a href="login.html" class="icon-btn">🚪</a></div>
   </div>
 </div>
@@ -90,80 +63,13 @@
     <div class="search-students">
       <div class="search-field">
         <span class="s-icon">🔍</span>
-        <input type="text" placeholder="Rechercher un étudiant...">
+        <input type="text" id="studentSearch" placeholder="Rechercher un étudiant..." oninput="filterStudentList()">
       </div>
-      <button class="filter-btn active">Tous</button>
-      <button class="filter-btn">En ligne</button>
-      <button class="filter-btn">Hors ligne</button>
+      <button class="filter-btn active" onclick="document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active');filterStudentList();">Tous</button>
+      <button class="filter-btn" onclick="document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active');filterStudentList();">En ligne</button>
+      <button class="filter-btn" onclick="document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active');filterStudentList();">Hors ligne</button>
     </div>
-    <div class="students-grid">
-      <div class="student-card">
-        <div class="sc-header">
-          <div class="sc-avatar" style="background:linear-gradient(135deg,var(--sky),var(--accent));">AF</div>
-          <div><div class="sc-name">YVE SHONGO</div><div class="sc-matric">ET2024001</div></div>
-        </div>
-        <div class="sc-stats"><span class="sc-tag tag-online">● En ligne</span><span class="sc-tag tag-blue">L2 FASI</span></div>
-        <div class="sc-actions">
-          <button class="sc-btn msg" onclick="showView('msgs',null)">💬 Message</button>
-          <button class="sc-btn view">👁 Profil</button>
-        </div>
-      </div>
-      <div class="student-card">
-        <div class="sc-header">
-          <div class="sc-avatar" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);">AM</div>
-          <div><div class="sc-name">AMANI JURENT</div><div class="sc-matric">SI2024002</div></div>
-        </div>
-        <div class="sc-stats"><span class="sc-tag tag-online">● En ligne</span><span class="sc-tag tag-blue">L2 FASI</span></div>
-        <div class="sc-actions">
-          <button class="sc-btn msg" onclick="showView('msgs',null)">💬 Message</button>
-          <button class="sc-btn view">👁 Profil</button>
-        </div>
-      </div>
-      <div class="student-card">
-        <div class="sc-header">
-          <div class="sc-avatar" style="background:linear-gradient(135deg,#6366f1,#4f46e5);">KD</div>
-          <div><div class="sc-name">LOVE NZOLA</div><div class="sc-matric">SI2024003</div></div>
-        </div>
-        <div class="sc-stats"><span class="sc-tag tag-offline">○ Hors ligne</span><span class="sc-tag tag-blue">L2 FASI</span></div>
-        <div class="sc-actions">
-          <button class="sc-btn msg" onclick="showView('msgs',null)">💬 Message</button>
-          <button class="sc-btn view">👁 Profil</button>
-        </div>
-      </div>
-      <div class="student-card">
-        <div class="sc-header">
-          <div class="sc-avatar" style="background:linear-gradient(135deg,#14b8a6,#0d9488);">FN</div>
-          <div><div class="sc-name">ANDY NGONGO</div><div class="sc-matric">SI2024004</div></div>
-        </div>
-        <div class="sc-stats"><span class="sc-tag tag-online">● En ligne</span><span class="sc-tag tag-blue">L2 FASI</span></div>
-        <div class="sc-actions">
-          <button class="sc-btn msg" onclick="showView('msgs',null)">💬 Message</button>
-          <button class="sc-btn view">👁 Profil</button>
-        </div>
-      </div>
-      <div class="student-card">
-        <div class="sc-header">
-          <div class="sc-avatar" style="background:linear-gradient(135deg,#ec4899,#db2777);">MS</div>
-          <div><div class="sc-name">NGUNZ ANDY</div><div class="sc-matric">SI2024005</div></div>
-        </div>
-        <div class="sc-stats"><span class="sc-tag tag-offline">○ Hors ligne</span><span class="sc-tag tag-blue">L2 FASI</span></div>
-        <div class="sc-actions">
-          <button class="sc-btn msg" onclick="showView('msgs',null)">💬 Message</button>
-          <button class="sc-btn view">👁 Profil</button>
-        </div>
-      </div>
-      <div class="student-card">
-        <div class="sc-header">
-          <div class="sc-avatar" style="background:linear-gradient(135deg,#f59e0b,#d97706);">OD</div>
-          <div><div class="sc-name">DAN MBO</div><div class="sc-matric">ET2024006</div></div>
-        </div>
-        <div class="sc-stats"><span class="sc-tag tag-online">● En ligne</span><span class="sc-tag tag-blue">L2 FASI</span></div>
-        <div class="sc-actions">
-          <button class="sc-btn msg" onclick="showView('msgs',null)">💬 Message</button>
-          <button class="sc-btn view">👁 Profil</button>
-        </div>
-      </div>
-    </div>
+    <div class="students-grid" id="studentGrid"></div>
   </div>
 
   <!-- Mur pédagogique view -->
@@ -291,6 +197,6 @@
   </div>
 </div>
 
-<script></script>
+<script src="assets/js/dashboard_enseignant.js"></script>
 </body>
 </html>
