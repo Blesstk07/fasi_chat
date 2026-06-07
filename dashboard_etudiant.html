@@ -1,0 +1,448 @@
+<?php
+// On s'assure que la session est démarrée
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Inclusion de ton outil de routage/redirection
+require_once __DIR__ . '/../../helpers/redirect_helper.php';
+
+/**
+ * Fonction de vérification de session basée sur ton script d'origine
+ */
+function aurise(string $role) {
+    if (!isset($_SESSION['user'])) {
+        redirect("controllers", "login.php");
+        exit;
+    } else {
+        if ($_SESSION['user']['role'] != $role) {
+            redirect("controllers", "login.php");
+            exit;
+        }
+        return true;
+    }
+}
+
+// Protection stricte de la page : Seuls les étudiants accèdent à ce dashboard
+aurise('etudiant');
+
+// Récupération des informations de l'étudiant connecté stockées en Session
+$etudiantId = $_SESSION['user']['id'];
+$etudiantNom = $_SESSION['user']['nom'] ?? 'Étudiant';
+$etudiantPromo = $_SESSION['user']['promotion_nom'] ?? 'L2 FASI';
+?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FasiChat — Dashboard Étudiant</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/etudiant.css">
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="brand-mark">💬</div>
+    <div class="brand-info">
+      <h3>FasiChat</h3>
+      <span>Classroom Edition</span>
+    </div>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab(this,'msgs')">💬 Messages</button>
+    <button class="nav-tab" onclick="switchTab(this,'cours')">📚 Cours</button>
+    <button class="nav-tab" onclick="location.href='index.php?page=valve'">📣 Valve</button>
+  </div>
+
+  <div class="sidebar-search">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" placeholder="Rechercher..." id="sidebarSearchInput">
+    </div>
+  </div>
+
+  <div class="conv-list" id="msgs-panel">
+    <div class="section-label">Cours Publics</div>
+
+    <div class="conv-item active" id="target-public-2" onclick="selectConv(this, 2, 'public', 'PHP POO — Promo L2', '👥', 'Message Public')">
+      <div class="avatar avatar-group">👥</div>
+      <div class="conv-info">
+        <div class="conv-name">PHP POO — Promo L2</div>
+        <div class="conv-preview" id="preview-public-2">Chargement du dernier message...</div>
+      </div>
+      <div class="conv-meta">
+        <div class="conv-time" id="time-public-2">--:--</div>
+        <div class="conv-badge" style="display:none;">0</div>
+      </div>
+    </div>
+
+    <div class="conv-item" id="target-public-3" onclick="selectConv(this, 3, 'public', 'Système Embarqué', '🔐', 'Message Public')">
+      <div class="avatar avatar-teal">🔐</div>
+      <div class="conv-info">
+        <div class="conv-name">Système Embarqué</div>
+        <div class="conv-preview" id="preview-public-3">CT. ZUIYA : Le TP de demain est...</div>
+      </div>
+      <div class="conv-meta">
+        <div class="conv-time">11:05</div>
+      </div>
+    </div>
+
+    <div class="section-label">Messages Privés</div>
+
+    <div class="conv-item" id="target-prive-12" onclick="selectConv(this, 12, 'prive', 'Ezechiel ITEWE', 'AM', 'Message Privé')">
+      <div class="avatar avatar-blue" style="font-size:13px;font-weight:700;">AI</div>
+      <div class="conv-info">
+        <div class="conv-name">Ezechiel ITEWE</div>
+        <div class="conv-preview">Le culte de demain est important</div>
+      </div>
+      <div class="conv-meta">
+        <div class="conv-time">10:30</div>
+        <div class="conv-badge">1</div>
+      </div>
+    </div>
+
+    <div class="conv-item" id="target-prive-15" onclick="selectConv(this, 15, 'prive', 'Beloved MAZUA', 'KM', 'Message Privé')">
+      <div class="avatar avatar-sky" style="font-size:13px;font-weight:700;">BM</div>
+      <div class="conv-info">
+        <div class="conv-name">Beloved MAZUA</div>
+        <div class="conv-preview">J'ai envoyé le fichier</div>
+      </div>
+      <div class="conv-meta">
+        <div class="conv-time">Hier</div>
+      </div>
+    </div>
+
+    <div class="section-label">Enseignant → Étudiant (Mur)</div>
+
+    <div class="conv-item" id="target-mur-2" onclick="selectConv(this, 2, 'mur_pedagogique', 'Flux Pédagogique — PHP', 'PM', 'Mur Pédagogique')">
+      <div class="avatar avatar-blue" style="font-size:13px;font-weight:700;">PM</div>
+      <div class="conv-info">
+        <div class="conv-name">Prof. MAMPUYA <span class="tag-public" style="margin-left:4px;">MUR</span></div>
+        <div class="conv-preview" id="preview-mur-2">Consulter les annonces officielles du cours...</div>
+      </div>
+      <div class="conv-meta">
+        <div class="conv-time">09:00</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="sidebar-profile">
+    <div class="profile-avatar">
+      <div class="online-dot"></div>
+      🎓
+    </div>
+    <div class="profile-info">
+      <h4><?= htmlspecialchars($etudiantNom) ?></h4>
+      <span>Étudiant · <?= htmlspecialchars($etudiantPromo) ?></span>
+    </div>
+    <div class="profile-actions">
+      <a href="index.php?page=auth&action=logout" class="icon-btn" title="Déconnexion">🚪</a>
+    </div>
+  </div>
+</div>
+
+<div class="main-area">
+  <div class="chat-topbar">
+    <div class="chat-topbar-avatar" id="activeChatAvatar">👥</div>
+    <div class="chat-topbar-info">
+      <h3 id="activeChatTitle">PHP POO — Promo L2</h3>
+      <p id="activeChatSub">Discussion ouverte à la promotion</p>
+    </div>
+    <div class="status-badge public" id="activeChatBadge">
+      <div class="status-dot"></div>
+      <span id="activeChatBadgeLabel">Message Public</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="topbar-btn" title="Membres">👥</button>
+      <button class="topbar-btn" title="Fichiers">📁</button>
+      <button class="topbar-btn" title="Rechercher">🔍</button>
+    </div>
+  </div>
+
+  <div class="chat-messages" id="messages">
+    </div>
+
+  <div class="chat-input-area" id="chatInputArea">
+    <div class="input-toolbar">
+      <button class="toolbar-btn" onclick="triggerUpload('file')">📎 Fichier</button>
+      <button class="toolbar-btn" onclick="triggerUpload('image')">🖼 Image</button>
+      <button class="toolbar-btn" onclick="triggerUpload('video')">🎥 Vidéo</button>
+      <button class="toolbar-btn" onclick="triggerUpload('pdf')">📊 PDF</button>
+      <input type="file" id="hiddenFileInput" style="display:none;" onchange="handleFileSelected(this)">
+    </div>
+    <div class="input-row">
+      <button class="voice-btn" title="Message vocal">🎤</button>
+      <div class="msg-textarea-wrap">
+        <textarea class="msg-textarea" placeholder="Écrire un message...&#10;Appuyez sur Entrée pour envoyer" rows="1" id="msgInput" onkeydown="handleKey(event)"></textarea>
+        <button class="emoji-btn">😊</button>
+      </div>
+      <button class="send-btn" onclick="sendMsg()">➤</button>
+    </div>
+  </div>
+</div>
+
+<div class="right-panel">
+  <div class="panel-section">
+    <div class="panel-title">Infos du cours</div>
+    <div class="info-card">
+      <h4 id="rightPanelCourseName">PHP — Programmation Orientée Objet</h4>
+      <p>Module semestre 5 · Licence 2 Informatique</p>
+      <div class="tag-row">
+        <span class="tag tag-blue"><?= htmlspecialchars($etudiantPromo) ?></span>
+        <span class="tag tag-navy">Promo 2026</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-section">
+    <div class="panel-title">Enseignants</div>
+    <div class="member-item">
+      <div class="member-ava" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">PM</div>
+      <div class="member-info">
+        <h5>Prof. MAMPUYA</h5>
+        <p>Responsable du cours</p>
+      </div>
+      <div class="online-dot" style="width:8px;height:8px;background:var(--online);border-radius:50%;"></div>
+    </div>
+    <div class="member-item">
+      <div class="member-ava" style="background:linear-gradient(135deg,#6366f1,#4f46e5);">AB</div>
+      <div class="member-info">
+        <h5>Ass. BAHATI</h5>
+        <p>Assistant de cours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-section">
+    <div class="panel-title">Membres de promotion</div>
+    <div class="member-item">
+      <div class="member-ava" style="background:linear-gradient(135deg,var(--sky),var(--accent));">YOU</div>
+      <div class="member-info"><h5><?= htmlspecialchars($etudiantNom) ?> <span style="font-size:9px;color:var(--sky);">(vous)</span></h5><p>Étudiant</p></div>
+      <div class="online-dot" style="width:8px;height:8px;background:var(--online);border-radius:50%;"></div>
+    </div>
+    <div class="member-item">
+      <div class="member-ava" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);">DM</div>
+      <div class="member-info"><h5>Dan MBO</h5><p>Étudiant</p></div>
+      <div class="online-dot" style="width:8px;height:8px;background:var(--online);border-radius:50%;"></div>
+    </div>
+  </div>
+
+  <div class="panel-section">
+    <div class="panel-title">Fichiers partagés</div>
+    <div id="sharedFilesContainer">
+      <div class="info-card" style="cursor:pointer;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:20px;">📄</span>
+          <div><h4>Sujet_Projet.pdf</h4><p>2.4 Mo · Aujourd'hui</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Paramètres d'état de l'application cliente
+let currentTargetId = 2;       // ID du Cours ou du destinataire sélectionné (Défaut : PHP POO)
+let currentType = 'public';     // public, prive, ou mur_pedagogique
+let currentUserId = <?= (int)$etudiantId ?>;
+
+/**
+ * Gère le basculement d'affichage des grandes sections de la barre latérale
+ */
+function switchTab(button, tabType) {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    button.classList.add('active');
+    
+    // Si l'étudiant clique sur "Cours", on peut par exemple filtrer la liste des canaux
+    if (tabType === 'cours') {
+        alert("Affichage du listing des fiches de cours.");
+    }
+}
+
+/**
+ * Sélectionne un canal de messagerie dans la barre latérale et met à jour l'interface
+ */
+function selectConv(element, id, type, title, avatar, badgeLabel) {
+    // Changement de la classe active visuelle
+    document.querySelectorAll('.conv-item').forEach(item => item.classList.remove('active'));
+    element.classList.add('active');
+
+    // Sauvegarde de l'état sélectionné
+    currentTargetId = id;
+    currentType = type;
+
+    // Mise à jour de la Topbar centrale
+    document.getElementById('activeChatTitle').innerText = title;
+    document.getElementById('activeChatAvatar').innerText = avatar.substring(0, 2);
+    document.getElementById('activeChatBadgeLabel').innerText = badgeLabel;
+
+    // Règles métier de visibilité pour la saisie (Abstraction de communication)
+    // Un étudiant ne peut JAMAIS écrire sur le Mur Pédagogique (Réservé au corps professoral)
+    const inputArea = document.getElementById('chatInputArea');
+    if (type === 'mur_pedagogique') {
+        inputArea.style.display = 'none'; // Masquer la zone de texte
+    } else {
+        inputArea.style.display = 'block'; // Afficher la zone de texte
+        document.getElementById('msgInput').placeholder = (type === 'prive') ? "Écrire un message privé..." : "Écrire un message public au groupe...";
+    }
+
+    // Chargement immédiat des messages du canal choisi
+    chargerFluxMessages();
+}
+
+/**
+ * Requête asynchrone pour charger les messages via le MessageController (méthode Ajax)
+ */
+function chargerFluxMessages() {
+    let url = `index.php?page=message&action=recupererAjax&type=${currentType}&target_id=${currentTargetId}`;
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('messages');
+            container.innerHTML = '<div class="date-sep">Fil de discussion sécurisé</div>';
+
+            if (data.success && data.messages.length > 0) {
+                data.messages.forEach(msg => {
+                    let isMine = (parseInt(msg.expediteur_id) === currentUserId);
+                    let rowClass = isMine ? 'msg-row mine' : 'msg-row';
+                    let bubbleClass = isMine ? 'bubble mine' : 'bubble theirs';
+                    let senderHtml = (!isMine && currentType === 'public') ? `<div class="msg-sender">${msg.auteur_nom} · ${msg.date_formatee}</div>` : '';
+
+                    let msgBody = '';
+                    // Gestion d'affichage si c'est un fichier multimédia stocké
+                    if (msg.fichier_url) {
+                        msgBody = `
+                            <div class="file-bubble" onclick="window.open('${msg.fichier_url}')" style="cursor:pointer;">
+                              <div class="file-icon">📄</div>
+                              <div class="file-info">
+                                <h5>${msg.fichier_nom}</h5>
+                                <p>${msg.fichier_taille} · Cliquez pour télécharger</p>
+                              </div>
+                              <span style="font-size:18px;margin-left:auto;">⬇</span>
+                            </div>`;
+                    } else {
+                        // Message textuel classique
+                        msgBody = `<div class="${bubbleClass}">${msg.contenu}</div>`;
+                    }
+
+                    let messageRow = `
+                        <div class="${rowClass}">
+                          <div class="msg-avatar" style="background:${isMine ? 'linear-gradient(135deg,var(--sky),var(--accent))' : '#3b82f6'};">${msg.auteur_initiales}</div>
+                          <div class="msg-group">
+                            ${senderHtml}
+                            ${msgBody}
+                            <div class="msg-meta">${msg.heure_envoi} ${isMine ? '<span class="check-read">✓✓</span>' : ''}</div>
+                          </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', messageRow);
+                });
+            } else {
+                container.insertAdjacentHTML('beforeend', '<div style="text-align:center; padding:20px; color:var(--gray-400); font-size:13px;">Aucun message dans ce canal. Posez votre première question ! 🧠</div>');
+            }
+            // Défilement automatique vers le bas pour voir le dernier message reçu
+            container.scrollTop = container.scrollHeight;
+        })
+        .catch(err => console.error("Erreur d'actualisation du chat :", err));
+}
+
+/**
+ * Envoie le message saisi en base de données en interrogeant envoyer_message.php
+ */
+function sendMsg() {
+    const input = document.getElementById('msgInput');
+    const contenu = input.value.trim();
+    
+    if (!contenu) return; // Évite l'envoi de bulles vides
+
+    const formData = new FormData();
+    formData.append('type', currentType);
+    formData.append('contenu', contenu);
+    
+    // Détermination dynamique des cibles SQL
+    if (currentType === 'prive') {
+        formData.append('destinataire_id', currentTargetId);
+    } else {
+        formData.append('cours_id', currentTargetId);
+    }
+
+    fetch('index.php?page=message&action=envoyerAjax', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            input.value = ''; // Reset du champ
+            input.rows = 1;
+            chargerFluxMessages(); // Rechargement instantané du fil
+        } else {
+            alert("Erreur : " + data.error);
+        }
+    })
+    .catch(err => console.error("Erreur d'envoi :", err));
+}
+
+/**
+ * Intercepte la touche Entrée pour valider le formulaire sans rechargement
+ */
+function handleKey(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMsg();
+    }
+}
+
+/**
+ * Déclenche l'explorateur de fichier natif au clic sur les boutons d'attachement
+ */
+function triggerUpload(mediaType) {
+    document.getElementById('hiddenFileInput').click();
+}
+
+/**
+ * Gère le téléversement (Upload) immédiat après sélection d'une pièce jointe
+ */
+function handleFileSelected(inputElement) {
+    if (inputElement.files.length === 0) return;
+
+    const file = inputElement.files[0];
+    const formData = new FormData();
+    formData.append('type', currentType);
+    formData.append('fichiers', file); // Clé 'fichiers' traitée par FichierService.php
+    formData.append('contenu', `[Fichier joint: ${file.name}]`);
+
+    if (currentType === 'prive') {
+        formData.append('destinataire_id', currentTargetId);
+    } else {
+        formData.append('cours_id', currentTargetId);
+    }
+
+    fetch('index.php?page=message&action=envoyerAjax', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            chargerFluxMessages();
+        } else {
+            alert("Erreur d'upload : " + data.error);
+        }
+    });
+}
+
+// Chargement initial au démarrage du tableau de bord
+document.addEventListener("DOMContentLoaded", () => {
+    chargerFluxMessages();
+    // Long polling ou rafraîchissement automatique toutes les 4 secondes pour simuler du temps réel
+    setInterval(chargerFluxMessages, 4000);
+});
+</script>
+</body>
+</html>

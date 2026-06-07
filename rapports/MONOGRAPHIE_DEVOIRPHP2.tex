@@ -1,0 +1,327 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\title{Monographie du TP de PHP2}
+\author{L2LMD FASI}
+\date{Mai 2026}
+\begin{document}
+\thispagestyle{empty}
+\begin{center}
+  \textbf{MONOGRAPHIE DU TP DE PHP2} \\
+\vspace{0.8cm}
+\textbf{L2LMD FASI} \\
+\vspace{1.5cm}
+\textbf{Membres du groupe:} \\
+\vspace{0.7cm}
+\textbf{TSHIMANGA KALALA BLESS } \\
+\vspace{1cm}
+\textbf{CIVAVA LITSANI ESTHER} \\
+\vspace{1cm}
+\textbf{MUMPUBI ELAM RUBIS} \\
+\vspace{1.5cm}
+\textbf{Sujet du projet :  FasiChat Classroom} \\
+\vspace{1.5cm}
+\textbf{Année académique : 2025-2026} \\
+\vspace{0.5cm}
+\textbf{Date : Mai 2026}
+\end{center}
+\newpage
+\tableofcontents
+\newpage
+\section{Introduction}
+La présente monographie décrit la réalisation d'une application web de messagerie académique, nommée FasiChat Classroom. Ce projet pédagogique a été conçu dans le cadre du cours de programmation web en PHP, avec une volonté affirmée de privilégier le développement natif et la programmation orientée objet.
+
+Cette application propose une structure de communication interne pour une institution universitaire, en intégrant des fonctionnalités de messagerie, de gestion des rôles, de convocation, de publication d'annonces et de ressources multimédia. Le rapport met l'accent sur les choices de conception orientés objet et sur la hiérarchie des rôles administratifs adoptée pour répondre aux besoins du système.
+
+Ce rapport constitue une documentation académique et technique. Il permet de rendre compte du travail réalisé, de justifier les choix technologiques effectués et de démontrer que la création d’une application web, même à échelle réduite, demande une réflexion approfondie sur l’organisation, la sécurité, la maintenance et l’évolutivité du code.
+\section{Contexte et objectifs}
+L'objectif principal de ce projet est de concevoir un prototype fonctionnel qui illustre l'application concrète des concepts de PHP orienté objet. Il s'agit notamment de :
+\begin{itemize}
+  \item modéliser une architecture logicielle cohérente,
+  \item sécuriser l'authentification et les échanges,
+  \item différencier les droits d'accès selon les rôles,
+  \item structurer les données métier en base MySQL,
+  \item produire une interface utilisable par différents profils.
+\end{itemize}
+
+La démarche consiste à partir de besoins métiers réels (communication académique, annonces institutionnelles, convocations officielles) et à les traduire en une structure logicielle maintenable et évolutive.
+
+\section{Environnement technique}
+Le projet est développé en PHP 7.4+ avec une base de données MySQL / MariaDB. L'architecture repose sur des fichiers PHP natifs, complétés par du HTML5, du CSS3 et du JavaScript vanilla.
+
+Le choix de ne pas utiliser de framework garantit une compréhension complète de chaque couche de l'application : la couche d'accès aux données, la couche métier, le contrôle des autorisations et l'interface.
+
+\subsection{Technologies principales}
+\begin{itemize}
+  \item Backend : PHP 7.4+ avec PDO pour la base de données.
+  \item Base de données : MySQL / MariaDB.
+  \item Frontend : HTML5, CSS3, JavaScript.
+  \item Compression d'images : extension GD de PHP.
+\end{itemize}
+
+\section{Fonctionnalités principales}
+Le projet couvre les besoins suivants :
+\begin{itemize}
+  \item authentification sécurisée avec gestion de session,
+  \item messagerie interne (privée et publique),
+  \item convocation de réunions par le Doyen et le ViceDoyen,
+  \item gestion des annonces officielles par l'Apparitaire (Valve),
+  \item mur pédagogique pour les enseignants et assistants,
+  \item upload de fichiers multimédia avec compression automatique,
+  \item tableaux de bord personnalisés selon le rôle utilisateur.
+\end{itemize}
+
+\section{Organisation des modules}
+Chaque domaine fonctionnel est organisé dans un dossier distinct :
+\begin{itemize}
+  \item \texttt{auth/} pour la connexion, la déconnexion et la gestion de session,
+  \item \texttt{classes/} pour les modèles métier, les services de données et les traits partagés,
+  \item \texttt{includes/} pour les fonctions communes et les extraits HTML réutilisables,
+  \item \texttt{modules/} pour les pages métier spécifiques à la messagerie, aux convocations et à la gestion du Valve,
+  \item \texttt{assets/} pour les feuilles de style et les scripts front-end.
+\end{itemize}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{|l|p{8cm}|}
+\multicolumn{2}{|c|}{\textbf{Dossier auth/}} \\
+\hline
+\texttt{auth/login.php} & Formulaire et traitement de connexion utilisateur \\
+\hline
+\texttt{auth/logout.php} & Déconnexion et destruction de session \\
+\hline
+\texttt{auth/session.php} & Gestion des sessions et vérification des rôles \\
+\hline
+\multicolumn{2}{|c|}{\textbf{Dossier config/}} \\
+\hline
+\texttt{config/config.php} & Constantes et paramètres globaux de l’application \\
+\hline
+\multicolumn{2}{|c|}{\textbf{Dossier data/}} \\
+\hline
+\texttt{data/utilisateurs.sql} & Table des utilisateurs avec identifiants et rôles \\
+\hline
+\texttt{data/messages.sql} & Stockage des messages privés et publics \\
+\hline
+\texttt{data/convocations.sql} & Archive des convocations officielles du Doyen et Vice-Doyen \\
+\hline
+\texttt{data/valve.sql} & Annonces institutionnelles publiées par l’Apparitaire \\
+\hline
+\multicolumn{2}{|c|}{\textbf{Dossier includes/}} \\
+\hline
+\texttt{includes/fonctions-auth.php} & Logique d’authentification et gestion des sessions \\
+\hline
+\texttt{includes/fonctions-messages.php} & Lecture, écriture et contrôle de visibilité des messages \\
+\hline
+\texttt{includes/fonctions-convocations.php} & Création et diffusion des convocations de réunion \\
+\hline
+\texttt{includes/fonctions-valve.php} & Gestion des annonces institutionnelles (CRUD) \\
+\hline
+\texttt{includes/header.php} & En-tête HTML réutilisable \\
+\hline
+\texttt{includes/footer.php} & Pied de page HTML réutilisable \\
+\hline
+\multicolumn{2}{|c|}{\textbf{Dossier modules/admin/}} \\
+\hline
+\texttt{modules/admin/ajouter\_utilisateur.php} & Création de nouveaux comptes utilisateurs \\
+\hline
+\texttt{modules/admin/gestion\_roles.php} & Attribution et modification des rôles (étudiant, enseignant, etc.) \\
+\hline
+\texttt{modules/admin/supprimer\_utilisateur.php} & Suppression de comptes utilisateur \\
+\hline
+\multicolumn{2}{|c|}{\textbf{Dossier modules/messagerie/}} \\
+\hline
+\texttt{modules/messagerie/nouveau\_message.php} & Création et envoi de messages \\
+\hline
+\texttt{modules/messagerie/liste.php} & Affichage des conversations selon les règles de visibilité \\
+\hline
+\texttt{modules/messagerie/details.php} & Consultation détaillée d’un message \\
+\hline
+\multicolumn{2}{|c|}{\textbf{Dossier modules/convocations/}} \\
+\hline
+\texttt{modules/convocations/nouvelle.php} & Création d’une convocation par le Doyen ou Vice-Doyen \\
+\hline
+\texttt{modules/convocations/liste.php} & Liste des convocations reçues par les enseignants et assistants \\
+\hline
+\multicolumn{2}{|c|}{\textbf{Dossier modules/valve/}} \\
+\hline
+\texttt{modules/valve/ajouter.php} & Publication d’une nouvelle annonce institutionnelle \\
+\hline
+\texttt{modules/valve/modifier.php} & Modification d’une annonce existante \\
+\hline
+\texttt{modules/valve/supprimer.php} & Suppression d’une annonce \\
+\hline
+\multicolumn{2}{|c|}{\textbf{Dossier assets/css/}} \\
+\hline
+\texttt{assets/css/style.css} & Feuille de style principale \\
+\hline
+\multicolumn{2}{|c|}{\textbf{Dossier assets/js/}} \\
+\hline
+\texttt{assets/js/compression.js} & Scripts pour la compression des fichiers multimédia \\
+\hline
+\texttt{assets/js/interactions.js} & Scripts pour l’interactivité et la gestion du mur pédagogique \\
+\hline
+\end{tabular}
+\end{table}
+
+Ces modules permettent de suivre une architecture claire et modulaire, où chaque dossier est responsable d'un ensemble cohérent de fonctionnalités.
+
+\section{Architecture fonctionnelle}
+L'organisation du projet s'appuie sur une séparation claire des responsabilités :
+\begin{itemize}
+  \item \texttt{classes/} : les modèles métier, les services et les traits.
+  \item \texttt{config/} : la configuration globale et la connexion à la base de données.
+  \item \texttt{includes/} : les fonctions partagées et composants réutilisables.
+  \item \texttt{modules/} : les pages métier organisées par domaine.
+  \item \texttt{assets/} : styles et scripts du frontend.
+\end{itemize}
+
+Cette architecture répond au principe de séparation des préoccupations (SoC), améliorant la lisibilité, la maintenance et la réutilisabilité du code.
+
+\section{Conception orientée objet}
+La base de la conception repose sur une classe abstraite \texttt{Utilisateur}, qui encapsule les attributs et comportements communs à tous les utilisateurs de l'application.
+
+\subsection{La classe Utilisateur}
+\texttt{Utilisateur} expose les propriétés suivantes : identifiant, rôle, nom complet, identifiant de connexion, courriel, mot de passe, promotion, statut et date de création.
+
+Elle fournit également des méthodes partagées comme :
+\begin{itemize}
+  \item l'hydratation des données depuis la base,
+  \item la vérification du mot de passe haché,
+  \item la mise à jour du statut,
+  \item la récupération d'un utilisateur par identifiant, par email ou par identifiant de connexion.
+\end{itemize}
+
+Une méthode factory privée, \texttt{createFromData()}, sélectionne la classe concrète appropriée en fonction du rôle. Cette méthode permet de reconstruire un objet \texttt{Etudiant}, \texttt{Enseignant}, \texttt{Assistant}, \texttt{Doyen}, \texttt{ViceDoyen} ou \texttt{Apparitaire} sans dupliquer la logique de création.
+
+\subsection{Classes spécialisées}
+Chaque rôle est implémenté par une classe qui étend \texttt{Utilisateur} :
+\begin{itemize}
+  \item \texttt{Etudiant} : communication limitée aux enseignants et aux étudiants de la même promotion.
+  \item \texttt{Enseignant} : accès au mur pédagogique, réception des convocations et dialogue avec les étudiants.
+  \item \texttt{Assistant} : profil intermédiaire proche de l'enseignant.
+  \item \texttt{Doyen} : capacité de convocation et vision globale de la plateforme.
+  \item \texttt{ViceDoyen} : mêmes droits de convocation que le doyen, avec un rôle d'affectation.
+  \item \texttt{Apparitaire} : gestion exclusive du Valve et des annonces institutionnelles.
+\end{itemize}
+
+Chaque classe implémente trois méthodes abstraites héritées de \texttt{Utilisateur} :
+\begin{itemize}
+  \item \texttt{getPermissions()} : liste des permissions métier,
+  \item \texttt{peutEnvoyerMessageA(Utilisateur)} : règle de destinataire,
+  \item \texttt{getTableauBord()} : données de présentation du tableau de bord.
+\end{itemize}
+
+\subsection{Avantages de la POO}
+La conception orientée objet apporte plusieurs bénéfices :
+\begin{itemize}
+  \item encapsulation des règles métier,
+  \item réutilisation du code commun,
+  \item extension aisée pour de futurs rôles,
+  \item tests plus simples en isolant les comportements des classes.
+\end{itemize}
+
+Par exemple, le comportement d'envoi de message est entièrement géré par la méthode \texttt{peutEnvoyerMessageA()} de chaque rôle. Le contrôleur d'envoi de message ne connaît pas les détails de chaque cas ; il se contente d'interroger l'objet.
+
+\section{Hiérarchie des rôles administratifs}
+La hiérarchie administrative a été pensée pour reproduire une organisation académique stricte tout en garantissant un bon niveau de sécurité.
+
+\subsection{Rôles et responsabilités}
+\begin{description}
+  \item[Doyen] responsable de la coordination générale, de la création de convocations et de la consultation des statistiques.
+  \item[ViceDoyen] assistant du doyen, autorisé à convoquer et à gérer les affectations sans intervenir sur le Valve.
+  \item[Apparitaire] responsable du Valve, c'est-à-dire de la publication, de la modification et de la suppression des annonces officielles.
+\end{description}
+
+Cette répartition garantit que les actions critiques sont réparties entre des acteurs distincts. Le Doyen et le ViceDoyen partagent des droits de convocation, tandis que l'Apparitaire conserve l'autorité sur les communications institutionnelles.
+
+\subsection{Tableau des permissions}
+\begin{table}[h]
+\centering
+\begin{tabular}{|>{\bfseries}l|c|c|c|}
+\hline
+Rôle & Convocations & Gestion du Valve & Envoi de messages \\
+\hline
+Doyen & Oui & Lecture & Oui (tous) \\
+\hline
+ViceDoyen & Oui & Lecture & Oui (tous) \\
+\hline
+Apparitaire & Non & Oui & Non pédagogique \\
+\hline
+Enseignant & Non & Lecture & Oui (enseignants, assistants, étudiants) \\
+\hline
+Assistant & Non & Lecture & Oui (enseignants, étudiants) \\
+\hline
+Étudiant & Non & Lecture & Oui (enseignants, promotions internes) \\
+\hline
+\end{tabular}
+\caption{Comparaison des permissions selon les rôles}
+\end{table}
+
+\subsection{Justification du modèle objet}
+L'utilisation d'une hiérarchie de classes permet de formaliser les différences entre les rôles tout en conservant une base commune. Un rôle spécial comme l'Apparitaire peut surcharger un comportement sans affecter les autres classes.
+
+Le choix d'un trait pour la convocation est également justifié : il évite la duplication du code dans \texttt{Doyen} et \texttt{ViceDoyen} tout en conservant la flexibilité d'un partage de fonctionnalité hors hiérarchie stricte.
+
+\section{Sécurité et persistance des données}
+La persistance est assurée par une base de données MySQL et par le service singleton \texttt{BaseDeDonnees}. Ce service centralise la connexion PDO et évite la multiplication des connexions dans l'application.
+
+\subsection{Accès à la base de données}
+La classe \texttt{BaseDeDonnees} est un singleton : elle garantit une seule connexion active à la base, ce qui améliore la gestion des ressources et limite le risque d'erreurs.
+
+Ses options PDO sont :
+\begin{itemize}
+  \item \texttt{PDO::ERRMODE_EXCEPTION},
+  \item \texttt{PDO::ATTR_DEFAULT_FETCH_MODE = PDO::FETCH_ASSOC},
+  \item \texttt{PDO::ATTR_EMULATE_PREPARES = false}.
+\end{itemize}
+
+\subsection{Sécurisation de l'authentification}
+Les mots de passe sont hachés avec \texttt{password\_hash()} et vérifiés avec \texttt{password\_verify()}. Les sessions PHP sont utilisées pour conserver l'état de l'utilisateur et permettre un contrôle d'accès sur chaque page.
+
+Les entrées utilisateur sont également filtrées et validées pour limiter les injections SQL et les failles XSS.
+
+\section{Gestion des contenus et des flux métier}
+Le système distingue plusieurs types de contenu : messages privés, messages publics, convocations et annonces.
+
+Les règles de visibilité sont définies en fonction du rôle :
+\begin{itemize}
+  \item les étudiants communiquent avec leur promotion et les enseignants,
+  \item les enseignants et assistants communiquent entre eux et avec les étudiants,
+  \item les convocations sont diffusées aux enseignants et assistants,
+  \item le Valve est consultable par tous mais géré uniquement par l'Apparitaire.
+\end{itemize}
+
+L'approche orientée objet garantit que ces règles restent cohérentes et testables via les classes métier.
+
+\section{Interface utilisateur et ergonomie}
+L'application propose des tableaux de bord personnalisés pour chaque rôle. L'objectif est de présenter uniquement les fonctions disponibles et de réduire les erreurs d'utilisation.
+
+Par exemple, l'Apparitaire voit un écran dédié au Valve tandis que le Doyen dispose d'un accès rapide aux outils de convocation.
+
+\section{Tests et perspectives d'évolution}
+Le projet a été validé par des tests manuels couvrant les scénarios suivants :
+\begin{itemize}
+  \item connexion et gestion de session,
+  \item envoi de messages selon les règles de rôle,
+  \item création et consultation de convocations,
+  \item publication et modification d'annonces Valve,
+  \item upload et compression de fichiers.
+\end{itemize}
+
+Pour l'avenir, plusieurs axes d'évolution sont possibles :
+\begin{itemize}
+  \item ajout de notifications en temps réel,
+  \item migration vers un framework moderne,
+  \item implémentation d'un système de filtrage de contenu,
+  \item extension du modèle de rôle avec des permissions fines.
+\end{itemize}
+
+\section{Conclusion}
+FasiChat Classroom est une réalisation pédagogique structurée autour d'une architecture objet claire. Le rapport met en évidence des choix de conception cohérents : classe abstraite \texttt{Utilisateur}, spécialisation par rôles, usage de traits pour le partage de comportements et service singleton pour l'accès à la base.
+
+La hiérarchie des rôles administratifs est justifiée par une répartition claire des responsabilités entre le Doyen, le ViceDoyen et l'Apparitaire, offrant à la fois contrôle, coordination et séparation des tâches.
+
+Ce projet constitue une base solide pour poursuivre l'amélioration de la plateforme et intégrer des fonctionnalités plus avancées en respectant les principes de l'ingénierie logicielle.
+\end{document}
