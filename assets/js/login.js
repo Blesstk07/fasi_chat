@@ -1,4 +1,4 @@
-const API_BASE = '/FasiChatClassRoom/api';
+const API_BASE = '/api';
 
 function setRole(btn) {
   document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));

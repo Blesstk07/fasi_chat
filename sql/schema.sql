@@ -1,5 +1,5 @@
 -- =============================================================
--- FasiChat Classroom — Schéma de la base de données
+-- FasiChat Classroom — Schéma de la base de données (Corrigé)
 -- =============================================================
 
 CREATE DATABASE IF NOT EXISTS fasichat
@@ -8,9 +8,14 @@ CREATE DATABASE IF NOT EXISTS fasichat
 
 USE fasichat;
 
--- ---------------------------------------------------------
--- 1. UTILISATEURS
--- ---------------------------------------------------------
+-- 1. Tables Racine (sans dépendance)
+CREATE TABLE IF NOT EXISTS promotions (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    nom         VARCHAR(255) NOT NULL,
+    annee       VARCHAR(20) NOT NULL,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
 CREATE TABLE IF NOT EXISTS utilisateurs (
     id              INT AUTO_INCREMENT PRIMARY KEY,
     nom             VARCHAR(100) NOT NULL,
@@ -22,22 +27,11 @@ CREATE TABLE IF NOT EXISTS utilisateurs (
     matricule       VARCHAR(50) UNIQUE,
     statut          ENUM('en_ligne','hors_ligne') DEFAULT 'hors_ligne',
     derniere_connexion DATETIME,
-    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (promotion_id) REFERENCES promotions(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
--- ---------------------------------------------------------
--- 2. PROMOTIONS
--- ---------------------------------------------------------
-CREATE TABLE IF NOT EXISTS promotions (
-    id          INT AUTO_INCREMENT PRIMARY KEY,
-    nom         VARCHAR(255) NOT NULL,
-    annee       VARCHAR(20) NOT NULL,
-    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
-
--- ---------------------------------------------------------
--- 3. COURS
--- ---------------------------------------------------------
+-- 2. Tables de relation et fichiers
 CREATE TABLE IF NOT EXISTS cours (
     id              INT AUTO_INCREMENT PRIMARY KEY,
     nom             VARCHAR(255) NOT NULL,
@@ -48,9 +42,6 @@ CREATE TABLE IF NOT EXISTS cours (
     FOREIGN KEY (promotion_id) REFERENCES promotions(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
--- ---------------------------------------------------------
--- 4. COURS — ENSEIGNANTS (relation Many-to-Many)
--- ---------------------------------------------------------
 CREATE TABLE IF NOT EXISTS cours_enseignants (
     cours_id        INT NOT NULL,
     enseignant_id   INT NOT NULL,
@@ -59,9 +50,6 @@ CREATE TABLE IF NOT EXISTS cours_enseignants (
     FOREIGN KEY (enseignant_id) REFERENCES utilisateurs(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- ---------------------------------------------------------
--- 5. INSCRIPTIONS (étudiants inscrits à un cours)
--- ---------------------------------------------------------
 CREATE TABLE IF NOT EXISTS inscriptions (
     id              INT AUTO_INCREMENT PRIMARY KEY,
     etudiant_id     INT NOT NULL,
@@ -72,23 +60,6 @@ CREATE TABLE IF NOT EXISTS inscriptions (
     FOREIGN KEY (cours_id)    REFERENCES cours(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- ---------------------------------------------------------
--- 11. RÉACTIONS (messages)
--- ---------------------------------------------------------
-CREATE TABLE IF NOT EXISTS reactions (
-    id              INT AUTO_INCREMENT PRIMARY KEY,
-    message_id      INT NOT NULL,
-    utilisateur_id  INT NOT NULL,
-    emoji           VARCHAR(50) NOT NULL,
-    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY uq_reaction (message_id, utilisateur_id, emoji),
-    FOREIGN KEY (message_id)     REFERENCES messages(id) ON DELETE CASCADE,
-    FOREIGN KEY (utilisateur_id) REFERENCES utilisateurs(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
-
--- ---------------------------------------------------------
--- 10. FICHIERS (créé avant messages pour la FK)
--- ---------------------------------------------------------
 CREATE TABLE IF NOT EXISTS fichiers (
     id              INT AUTO_INCREMENT PRIMARY KEY,
     nom_original    VARCHAR(255) NOT NULL,
@@ -101,9 +72,7 @@ CREATE TABLE IF NOT EXISTS fichiers (
     FOREIGN KEY (uploader_id) REFERENCES utilisateurs(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- ---------------------------------------------------------
--- 6. MESSAGES
--- ---------------------------------------------------------
+-- 3. Messages et Annonces
 CREATE TABLE IF NOT EXISTS messages (
     id              INT AUTO_INCREMENT PRIMARY KEY,
     expediteur_id   INT NOT NULL,
@@ -120,9 +89,17 @@ CREATE TABLE IF NOT EXISTS messages (
     FOREIGN KEY (destinataire_id) REFERENCES utilisateurs(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- ---------------------------------------------------------
--- 7. CONVOCATIONS
--- ---------------------------------------------------------
+CREATE TABLE IF NOT EXISTS reactions (
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    message_id      INT NOT NULL,
+    utilisateur_id  INT NOT NULL,
+    emoji           VARCHAR(50) NOT NULL,
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_reaction (message_id, utilisateur_id, emoji),
+    FOREIGN KEY (message_id)     REFERENCES messages(id) ON DELETE CASCADE,
+    FOREIGN KEY (utilisateur_id) REFERENCES utilisateurs(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 CREATE TABLE IF NOT EXISTS convocations (
     id              INT AUTO_INCREMENT PRIMARY KEY,
     expediteur_id   INT NOT NULL,
@@ -135,9 +112,6 @@ CREATE TABLE IF NOT EXISTS convocations (
     FOREIGN KEY (expediteur_id) REFERENCES utilisateurs(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- ---------------------------------------------------------
--- 8. CONVOCATION — DESTINATAIRES
--- ---------------------------------------------------------
 CREATE TABLE IF NOT EXISTS convocation_destinataires (
     convocation_id  INT NOT NULL,
     utilisateur_id  INT NOT NULL,
@@ -147,9 +121,6 @@ CREATE TABLE IF NOT EXISTS convocation_destinataires (
     FOREIGN KEY (utilisateur_id)  REFERENCES utilisateurs(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- ---------------------------------------------------------
--- 9. VALVE (annonces institutionnelles)
--- ---------------------------------------------------------
 CREATE TABLE IF NOT EXISTS valve_annonces (
     id              INT AUTO_INCREMENT PRIMARY KEY,
     titre           VARCHAR(255) NOT NULL,
@@ -163,5 +134,3 @@ CREATE TABLE IF NOT EXISTS valve_annonces (
     FOREIGN KEY (apparitaire_id) REFERENCES utilisateurs(id) ON DELETE CASCADE,
     FOREIGN KEY (fichier_id)     REFERENCES fichiers(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
-
-

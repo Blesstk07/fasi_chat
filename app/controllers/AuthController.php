@@ -47,14 +47,15 @@ class AuthController
             [$user->getId()]
         );
 
+        // Correction des chemins de redirection : suppression de /FasiChatClassRoom/
         $redirect = match ($user->getRole()) {
-            'etudiant'    => '/FasiChatClassRoom/dashboard_etudiant.html',
-            'enseignant'  => '/FasiChatClassRoom/dashboard_enseignant.html',
-            'assistant'   => '/FasiChatClassRoom/dashboard_enseignant.html',
-            'doyen'       => '/FasiChatClassRoom/dashboard_admin.html',
-            'vice_doyen'  => '/FasiChatClassRoom/dashboard_vicedoyen.html',
-            'apparitaire' => '/FasiChatClassRoom/dashboard_apparitaire.html',
-            default       => '/FasiChatClassRoom/login.html',
+            'etudiant'    => '/dashboard_etudiant.html',
+            'enseignant'  => '/dashboard_enseignant.html',
+            'assistant'   => '/dashboard_enseignant.html',
+            'doyen'       => '/dashboard_admin.html',
+            'vice_doyen'  => '/dashboard_vicedoyen.html',
+            'apparitaire' => '/dashboard_apparitaire.html',
+            default       => '/login.html',
         };
 
         echo json_encode([
@@ -98,7 +99,7 @@ class AuthController
             'id'        => Session::getUserId(),
             'nom'       => Session::get('user_nom'),
             'prenom'    => Session::get('user_prenom'),
-            'email'     => Session::get('user_email'),
+            'email'       => Session::get('user_email'),
             'role'      => Session::getUserRole(),
             'matricule' => Session::get('user_matricule'),
             'promotion_id' => Session::get('user_promotion_id'),

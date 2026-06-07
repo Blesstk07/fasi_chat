@@ -1,6 +1,7 @@
 <?php
 
-require_once __DIR__ . '/../../config/database.php';
+// Chargement sécurisé de la configuration
+require_once dirname(__DIR__, 2) . '/config/database.php';
 
 class Database
 {
@@ -9,12 +10,17 @@ class Database
     public static function getInstance(): PDO
     {
         if (self::$instance === null) {
-            $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
-            self::$instance = new PDO($dsn, DB_USER, DB_PASS, [
-                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES   => false,
-            ]);
+            try {
+                $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
+                self::$instance = new PDO($dsn, DB_USER, DB_PASS, [
+                    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES   => false,
+                ]);
+            } catch (PDOException $e) {
+                // Affiche l'erreur réelle pour déboguer le problème de connexion
+                die("ERREUR DE CONNEXION PDO : " . $e->getMessage() . "<br>Vérifiez vos paramètres dans config/database.php");
+            }
         }
         return self::$instance;
     }
