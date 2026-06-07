@@ -1,0 +1,476 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+
+\title{Rapport technique d'implémentation\\FasiChat Classroom}
+\author{L2LMD FASI}
+\date{Juin 2026}
+
+\begin{document}
+
+\thispagestyle{empty}
+\begin{center}
+  \textbf{RAPPORT TECHNIQUE DU TP} \\
+  \vspace{0.4cm}
+  \textbf{PHP2 - Programmation orientée objet et gestion de données} \\
+  \vspace{0.8cm}
+  \textbf{L2LMD FASI} \\
+  \vspace{1.5cm}
+  \textbf{Membres du groupe :} \\
+  \vspace{0.7cm}
+  \textbf{TSHIMANGA KALALA BLESS} \\
+  \vspace{1cm}
+  \textbf{CIVAVA LITSANI ESTHER} \\
+  \vspace{1cm}
+  \textbf{MUMPUBI ELAM RUBIS} \\
+  \vspace{1.5cm}
+  \textbf{Sujet du projet : FasiChat Classroom} \\
+  \vspace{1.5cm}
+  \textbf{Année académique : 2025-2026} \\
+  \vspace{0.5cm}
+  \textbf{Date : Juin 2026}
+\end{center}
+\newpage
+
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Introduction}
+% ============================================================
+
+Le premier rapport technique (\textit{Monographie du TP de PHP2}, mai 2026) a posé les fondements conceptuels de \textbf{FasiChat Classroom} : architecture modulaire, hiérarchie des rôles, conception orientée objet et règles métier de la messagerie académique.
+
+Le présent document constitue un \textbf{second rapport technique} qui prend appui sur cette monographie initiale pour rendre compte de la \textbf{mise en œuvre concrète} du projet. Il décrit la structure du code source, les modules développés, l'organisation des classes et l'architecture de la base de données.
+
+Ce rapport répond aux objectifs suivants :
+\begin{itemize}
+  \item documenter l'architecture effective du code source ;
+  \item présenter les fonctionnalités implémentées par module ;
+  \item détailler la conception orientée objet appliquée ;
+  \item décrire les choix techniques de persistance, de sécurité et d'interface.
+\end{itemize}
+
+% ============================================================
+\section{Rappel du contexte projet}
+% ============================================================
+
+\subsection{Objectif pédagogique}
+FasiChat Classroom est une plateforme de communication interne destinée à la Faculté des Sciences Informatiques (FASI). Le projet vise à démontrer la maîtrise du PHP natif orienté objet, de PDO/MySQL et d'une interface web multi-rôles.
+
+\subsection{Fonctionnalités du système}
+L'application couvre les besoins suivants :
+\begin{itemize}
+  \item authentification sécurisée par session ;
+  \item messagerie privée, publique et mur pédagogique ;
+  \item convocations officielles (Doyen / Vice-Doyen) ;
+  \item gestion du Valve (annonces institutionnelles par l'Apparitaire) ;
+  \item tableaux de bord personnalisés par rôle ;
+  \item upload et compression de fichiers multimédia.
+\end{itemize}
+
+\subsection{Périmètre de ce second rapport}
+Ce rapport analyse le code source du dépôt au mois de juin 2026, soit \textbf{53 fichiers sources} (PHP, HTML, CSS, JavaScript et SQL), et présente la traduction technique des choix de conception formulés dans la monographie I.
+
+% ============================================================
+\section{Architecture du projet}
+% ============================================================
+
+\subsection{Organisation des modules}
+
+L'implémentation repose sur une organisation modulaire claire, où chaque dossier regroupe un ensemble cohérent de responsabilités :
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Module fonctionnel} & \textbf{Emplacement} & \textbf{Rôle} \\
+\hline
+Authentification & \texttt{controllers/login.php}, \texttt{logout.php} & Connexion et gestion de session \\
+\hline
+Messagerie & \texttt{messagerie.php}, \texttt{classes/} & Envoi et consultation des messages \\
+\hline
+Valve & \texttt{valve.php}, \texttt{models/AnnonceValves.php} & Annonces institutionnelles \\
+\hline
+Convocations & \texttt{models/Convocation.php}, \texttt{controllers/} & Réunions officielles \\
+\hline
+Administration & \texttt{dashboard\_admin.html} & Gestion des utilisateurs \\
+\hline
+Fonctions communes & \texttt{helpers/} & Authentification, sécurité, redirection \\
+\hline
+Données & \texttt{config/schema.sql}, \texttt{test.sql} & Schéma et jeux de test \\
+\hline
+\end{tabular}
+\caption{Correspondance modules fonctionnels et fichiers sources}
+\end{table}
+
+\subsection{Arborescence du projet}
+
+\begin{verbatim}
+fasi_chat/
+  index.php              -> point d'entree et redirection
+  login.php              -> interface de connexion
+  messagerie.php         -> messagerie (page principale)
+  valve.php              -> annonces institutionnelles
+  dashboard_*.html       -> tableaux de bord par role (5 fichiers)
+  config/
+    Database.php         -> connexion PDO singleton
+    schema.sql           -> schema complet
+    test.sql             -> donnees de test
+  controllers/           -> traitement des formulaires et actions
+  classes/               -> logique metier messages et fichiers
+  models/                -> modeles OOP utilisateurs et entites
+  helpers/               -> auth, securite, redirection
+  assets/                -> CSS et JavaScript
+\end{verbatim}
+
+\subsection{Architecture en couches}
+
+L'application suit une architecture en trois couches :
+
+\begin{enumerate}
+  \item \textbf{Présentation} : pages PHP et HTML (\texttt{login.php}, \texttt{messagerie.php}, \texttt{valve.php}, tableaux de bord).
+  \item \textbf{Contrôleurs} : scripts dans \texttt{controllers/} traitant les requêtes POST et les actions AJAX.
+  \item \textbf{Métier et données} : classes \texttt{MessageService}, \texttt{FichierService}, modèles \texttt{Utilisateur} et accès PDO via \texttt{Database}.
+\end{enumerate}
+
+Cette séparation respecte le principe de responsabilité unique et facilite la maintenance du code.
+
+% ============================================================
+\section{Modules fonctionnels}
+% ============================================================
+
+\subsection{Vue d'ensemble}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|p{9cm}|}
+\hline
+\textbf{Module} & \textbf{Description} \\
+\hline
+Authentification & Connexion par email, gestion de session, redirection vers la messagerie \\
+\hline
+Messagerie privée & Communication directe avec règles de visibilité par rôle et promotion \\
+\hline
+Messagerie publique & Messages liés aux cours, accès selon l'inscription \\
+\hline
+Mur pédagogique & Publications réservées aux enseignants et assistants \\
+\hline
+Upload de fichiers & Validation MIME, limite 20 Mo, compression GD et FFmpeg \\
+\hline
+Valve & Consultation, filtrage, recherche et publication d'annonces \\
+\hline
+Convocations & Création et diffusion de réunions officielles \\
+\hline
+Tableaux de bord & Interfaces personnalisées par rôle (étudiant, enseignant, admin, etc.) \\
+\hline
+API AJAX & Endpoints JSON pour la messagerie dynamique \\
+\hline
+\end{tabular}
+\caption{Modules fonctionnels de FasiChat Classroom}
+\end{table}
+
+\subsection{Authentification et sessions}
+
+Le flux d'authentification s'organise en quatre étapes :
+\begin{itemize}
+  \item \texttt{login.php} affiche le formulaire de connexion ;
+  \item \texttt{controllers/login.php} vérifie l'email et le mot de passe via \texttt{password\_verify()} ;
+  \item la session conserve les informations utilisateur (id, nom, email, rôle, promotion) ;
+  \item redirection automatique vers \texttt{messagerie.php} après connexion réussie.
+\end{itemize}
+
+La déconnexion est gérée par \texttt{controllers/logout.php}, qui détruit la session et renvoie vers la page de connexion.
+
+\subsection{Messagerie}
+
+Le cœur métier de l'application est implémenté dans \texttt{classes/MessageService.php}. Ce service orchestre trois types de messages via des classes spécialisées :
+
+\begin{itemize}
+  \item \texttt{MessagePrive} : communication directe entre deux utilisateurs ;
+  \item \texttt{MessagePublic} : messages liés à un cours ;
+  \item \texttt{MessageMurPedagogique} : publications pédagogiques sur un cours.
+\end{itemize}
+
+Les règles de visibilité des messages privés sont appliquées côté serveur :
+\begin{itemize}
+  \item étudiant $\leftrightarrow$ étudiant : même \texttt{promotion\_id} uniquement ;
+  \item enseignant/assistant $\leftrightarrow$ enseignant/assistant : autorisé ;
+  \item doyen $\leftrightarrow$ vice-doyen : autorisé ;
+  \item les autres combinaisons sont filtrées par les règles métier du service.
+\end{itemize}
+
+L'envoi de fichiers est géré par \texttt{FichierService} avec validation du type MIME, limitation de taille et compression optionnelle des images (GD) et vidéos (FFmpeg).
+
+\subsection{Valve (annonces institutionnelles)}
+
+La page \texttt{valve.php} offre un espace dédié aux annonces officielles de la faculté. Elle permet :
+\begin{itemize}
+  \item la consultation du fil d'annonces ;
+  \item le filtrage par catégorie (urgent, convocation, info, académique) ;
+  \item la recherche par mot-clé ;
+  \item la publication de nouvelles annonces avec pièce jointe optionnelle.
+\end{itemize}
+
+Le modèle \texttt{AnnonceValves.php} assure la persistance et le CRUD des annonces côté objet.
+
+\subsection{Convocations et administration}
+
+Le module de convocations s'appuie sur les tables \texttt{convocations} et \texttt{convocation\_destinataires}. Le contrôleur \texttt{ConvocationController.php} et le modèle \texttt{Convocation.php} structurent la création de réunions par le Doyen ou le Vice-Doyen, avec suivi du statut de lecture par destinataire.
+
+L'administration des utilisateurs est prévue via le tableau de bord admin et les contrôleurs associés, conformément à la monographie I.
+
+\subsection{Tableaux de bord}
+
+Cinq fichiers \texttt{dashboard\_*.html} proposent des interfaces adaptées à chaque profil :
+\begin{itemize}
+  \item \texttt{dashboard\_etudiant.html} : messagerie et cours ;
+  \item \texttt{dashboard\_enseignant.html} : mur pédagogique et convocations ;
+  \item \texttt{dashboard\_admin.html} : gestion des utilisateurs ;
+  \item \texttt{dashboard\_vicedoyen.html} : convocations et affectations ;
+  \item \texttt{dashboard\_apparitaire.html} : gestion du Valve.
+\end{itemize}
+
+Chaque tableau de bord présente les fonctions pertinentes pour le rôle concerné, en cohérence avec le tableau des permissions de la monographie I.
+
+% ============================================================
+\section{Conception orientée objet}
+% ============================================================
+
+\subsection{Hiérarchie des classes}
+
+La conception repose sur une hiérarchie de classes claire, conforme aux principes décrits dans la monographie I :
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{|l|p{9cm}|}
+\hline
+\textbf{Classe} & \textbf{Rôle} \\
+\hline
+\texttt{Utilisateur} (abstraite) & Attributs communs et méthode \texttt{getDroitsSpecifiques()} \\
+\hline
+\texttt{Etudiant}, \texttt{Enseignant}, \texttt{Doyen}, \texttt{ViceDoyen}, \texttt{Apparitaire} & Spécialisation par rôle utilisateur \\
+\hline
+\texttt{Message} (abstraite) & Classe parente des trois types de messages \\
+\hline
+\texttt{MessageService} & Orchestration des règles métier et de la persistance \\
+\hline
+\texttt{FichierService} & Gestion des pièces jointes et compression \\
+\hline
+\texttt{AnnonceValves} & CRUD des annonces Valve \\
+\hline
+\texttt{Convocation}, \texttt{Cours}, \texttt{Promotion} & Entités métier du domaine académique \\
+\hline
+\end{tabular}
+\caption{Hiérarchie des classes OOP}
+\end{table}
+
+\subsection{Services et contrôleurs}
+
+Les services métier centralisent la logique applicative :
+\begin{itemize}
+  \item \texttt{MessageService} : envoi, réception et filtrage des messages selon les rôles ;
+  \item \texttt{FichierService} : upload, validation et compression des fichiers ;
+  \item \texttt{AnnonceValves} : gestion complète du Valve.
+\end{itemize}
+
+Les contrôleurs assurent le lien entre l'interface et la couche métier :
+\begin{itemize}
+  \item \texttt{login.php}, \texttt{logout.php}, \texttt{envoyer\_message.php} : flux d'authentification et d'envoi ;
+  \item \texttt{MessageController.php} : endpoints AJAX pour la messagerie dynamique ;
+  \item \texttt{ValveController.php} : actions sur les annonces institutionnelles ;
+  \item \texttt{DashboardController.php}, \texttt{ConvocationController.php} : tableaux de bord et convocations.
+\end{itemize}
+
+% ============================================================
+\section{Base de données}
+% ============================================================
+
+\subsection{Schéma relationnel}
+
+La base \texttt{fasichat} comprend 9 tables principales :
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Table} & \textbf{Rôle} \\
+\hline
+\texttt{promotions} & Cohortes d'étudiants (L1, L2 Info) \\
+\hline
+\texttt{utilisateurs} & Comptes multi-rôles (6 rôles ENUM) \\
+\hline
+\texttt{cours} & Cours rattachés à un enseignant \\
+\hline
+\texttt{cours\_etudiants} & Inscription étudiants $\leftrightarrow$ cours \\
+\hline
+\texttt{messages} & Messages privés, publics, mur, convocation \\
+\hline
+\texttt{fichiers} & Pièces jointes liées aux messages \\
+\hline
+\texttt{convocations} & Réunions officielles \\
+\hline
+\texttt{convocation\_destinataires} & Destinataires et statut de lecture \\
+\hline
+\texttt{valve\_annonces} & Annonces institutionnelles \\
+\hline
+\end{tabular}
+\caption{Tables de la base fasichat}
+\end{table}
+
+Les relations entre tables sont assurées par des clés étrangères, garantissant l'intégrité référentielle des données.
+
+\subsection{Connexion PDO}
+
+La classe \texttt{Database} (\texttt{config/Database.php}) implémente un singleton PDO avec :
+\begin{itemize}
+  \item \texttt{PDO::ERRMODE\_EXCEPTION} pour la gestion des erreurs ;
+  \item \texttt{PDO::FETCH\_ASSOC} comme mode de récupération par défaut ;
+  \item \texttt{PDO::ATTR\_EMULATE\_PREPARES = false} pour des requêtes préparées natives.
+\end{itemize}
+
+Cette configuration assure une connexion fiable et sécurisée à la base de données MySQL.
+
+\subsection{Données de test}
+
+Le fichier \texttt{config/test.sql} fournit un jeu de données complet pour la démonstration :
+\begin{itemize}
+  \item 12 utilisateurs couvrant tous les rôles ;
+  \item 2 cours avec inscriptions ;
+  \item messages exemples pour chaque type de communication.
+\end{itemize}
+
+% ============================================================
+\section{Sécurité}
+% ============================================================
+
+La sécurité de l'application repose sur plusieurs mécanismes :
+
+\begin{itemize}
+  \item \textbf{Mots de passe} : hachage bcrypt via \texttt{password\_hash()} et vérification par \texttt{password\_verify()} ;
+  \item \textbf{Requêtes SQL} : requêtes préparées PDO pour prévenir les injections ;
+  \item \textbf{XSS} : échappement systématique via \texttt{htmlspecialchars()} dans les templates ;
+  \item \textbf{Upload} : validation du type MIME, limitation de taille (20 Mo), stockage sécurisé dans \texttt{uploads/} ;
+  \item \textbf{Sessions} : contrôle d'accès sur chaque page protégée ;
+  \item \textbf{Validation des entrées} : filtrage et nettoyage des données utilisateur via les helpers de sécurité.
+\end{itemize}
+
+Ces mesures garantissent un niveau de protection adapté à une application de communication interne.
+
+% ============================================================
+\section{Interface utilisateur}
+% ============================================================
+
+\subsection{Pages principales}
+
+\begin{itemize}
+  \item \texttt{login.php} : page de connexion avec sélecteur de rôle et design sombre ;
+  \item \texttt{messagerie.php} : interface complète avec onglets privé/public/mur, liste de contacts, envoi de messages et fichiers ;
+  \item \texttt{valve.php} : fil d'annonces, filtres par catégorie, recherche et modal de publication.
+\end{itemize}
+
+\subsection{Design system}
+
+L'interface repose sur un design system cohérent :
+\begin{itemize}
+  \item thème sombre avec dégradés colorés ;
+  \item polices Google Fonts (Sora, JetBrains Mono) ;
+  \item layout sidebar + zone principale ;
+  \item feuilles de style dédiées par page dans \texttt{assets/css/} ;
+  \item scripts JavaScript pour l'interactivité dans \texttt{assets/js/}.
+\end{itemize}
+
+\subsection{Ergonomie par rôle}
+
+Chaque tableau de bord est conçu pour présenter uniquement les fonctions disponibles selon le profil utilisateur, réduisant la complexité et améliorant l'expérience. L'Apparitaire accède directement au Valve, le Doyen dispose des outils de convocation, et l'étudiant voit sa messagerie et ses cours.
+
+% ============================================================
+\section{Tests et validation}
+% ============================================================
+
+Le projet a été validé par des tests manuels couvrant les scénarios suivants :
+
+\begin{enumerate}
+  \item Connexion avec un compte étudiant, enseignant ou apparitaire ;
+  \item Envoi et réception de messages privés selon les règles de promotion ;
+  \item Publication de messages publics sur un cours accessible ;
+  \item Publication sur le mur pédagogique (profil enseignant/assistant) ;
+  \item Upload d'une pièce jointe avec validation de type ;
+  \item Consultation et filtrage des annonces Valve ;
+  \item Navigation entre les différents tableaux de bord par rôle.
+\end{enumerate}
+
+Ces tests confirment le bon fonctionnement des modules centraux de l'application.
+
+% ============================================================
+\section{Perspectives d'évolution}
+% ============================================================
+
+Plusieurs axes d'évolution sont envisageables pour enrichir la plateforme :
+
+\begin{itemize}
+  \item \textbf{Notifications temps réel} : WebSockets ou polling AJAX pour les nouveaux messages ;
+  \item \textbf{Tests automatisés} : PHPUnit pour valider les règles métier de \texttt{MessageService} ;
+  \item \textbf{Déploiement conteneurisé} : Docker Compose (Apache + MySQL + PHP) ;
+  \item \textbf{Permissions fines} : système ACL au-delà des rôles ENUM ;
+  \item \textbf{Migration framework} : adoption éventuelle de Laravel ou Symfony pour la scalabilité.
+\end{itemize}
+
+% ============================================================
+\section{Conclusion}
+% ============================================================
+
+Ce second rapport technique démontre que \textbf{FasiChat Classroom} a été concrètement implémenté autour d'une architecture orientée objet cohérente. Les modules d'authentification, de messagerie, du Valve et des tableaux de bord traduisent fidèlement les choix de conception formulés dans la monographie I.
+
+La hiérarchie de classes (\texttt{Utilisateur}, \texttt{Message}, services métier) et la structure en couches (présentation, contrôleurs, métier) illustrent une application des principes de l'ingénierie logicielle vus en cours de PHP2.
+
+Le projet constitue une réalisation pédagogique complète, combinant modélisation objet, persistance relationnelle, sécurité web et interface multi-rôles, au service de la communication académique au sein de la FASI.
+
+% ============================================================
+\appendix
+\section{Annexe A --- Comptes de test}
+% ============================================================
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Email} & \textbf{Rôle} & \textbf{Mot de passe} \\
+\hline
+\texttt{jean@student.com} & Étudiant & \texttt{123456} \\
+\hline
+\texttt{prof@fasi.com} & Enseignant & \texttt{123456} \\
+\hline
+\texttt{doyen@fasi.com} & Doyen & \texttt{123456} \\
+\hline
+\texttt{apparitaire@fasi.com} & Apparitaire & \texttt{123456} \\
+\hline
+\end{tabular}
+\caption{Comptes de test (\texttt{config/test.sql})}
+\end{table}
+
+\section{Annexe B --- Référence croisée des rapports}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Rapport} & \textbf{Fichier} & \textbf{Objet} \\
+\hline
+Monographie I & \texttt{MONOGRAPHIE\_DEVOIRPHP2.tex} & Conception, POO, architecture cible \\
+\hline
+Rapport II & \texttt{RAPPORT\_TECHNIQUE\_IMPLEMENTATION.tex} & Implémentation et modules développés \\
+\hline
+Diagramme & \texttt{Diagram\_classroom.png} & Schéma des classes \\
+\hline
+\end{tabular}
+\caption{Documentation technique du projet}
+\end{table}
+
+\end{document}
